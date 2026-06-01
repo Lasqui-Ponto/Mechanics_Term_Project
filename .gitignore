@@ -1,0 +1,27 @@
+# LaTeX temporary files
+*.aux
+*.log
+*.toc
+*.nav
+*.out
+*.snm
+*.fdb_latexmk
+*.fls
+
+# Python temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
