@@ -4,6 +4,14 @@ This repository contains a reproducible, dimensionless mechanics study of a stat
 
 Repository: [github.com/Lasqui-Ponto/Mechanics_Term_Project](https://github.com/Lasqui-Ponto/Mechanics_Term_Project)
 
+## New independent study (2026-07-10)
+
+The repository now also contains a separate research package, [`Thin_Shell_Study/`](Thin_Shell_Study/README.md), which leaves the original report and slides unchanged. It asks a narrower quantitative question:
+
+> How accurately does the long-range thin-shell law predict the full nonlinear spherical solution, and how should it be continued when the source has finite Yukawa range?
+
+The new study solves 725 spherical BVPs at an outer radius of $160R$, extracts a numerical scalar charge from the exterior Yukawa tail, compares surface-shell and center-point continuations, and benchmarks an active-shell radial integral. A 14-point stratified $160R\to240R$ audit checks grid corners and the 10% decision boundary. The study also shows how continuation ambiguity propagates into an illustrative force-ratio threshold. Its report, 16:9 slides, Korean speaker notes, scan data, held-out checks, tests, and generation scripts are self-contained in that directory.
+
 ## What was improved
 
 - The numerical method is now explicit: the static field is solved as a collocation BVP and the particle orbit is integrated with adaptive Dormand–Prince RK45 (`rtol=1e-9`, `atol=1e-11`, `max_step=0.05`).
