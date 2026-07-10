@@ -1,7 +1,11 @@
 import numpy as np
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_bvp
-from scipy.optimize import fsolve
+from pathlib import Path
+
+from chameleon_numerics import phi_min
 
 # =====================================================================
 # 1. 구형 대칭 천체 모델 물리 매개변수 설정
@@ -31,10 +35,7 @@ def rho_spherical(r):
 # 2. 경계 조건용 유효 포텐셜 극솟값 구하기
 # =====================================================================
 def get_phi_min(density):
-    func = lambda phi: -1.0 / (phi**2) + density * np.exp(phi)
-    initial_guess = (1.0 / density) ** (1.0 / (N_POWER + 1.0))
-    phi_sol = fsolve(func, initial_guess)
-    return phi_sol[0]
+    return phi_min(density)
 
 phi_body_center = get_phi_min(RHO_BODY)
 phi_vacuum_far = get_phi_min(RHO_VACUUM)
@@ -175,7 +176,7 @@ ax2.text(7.0, 7.0, "Vacuum\n(Unscreened)", color='#10AC84', fontsize=11, fontwei
 
 # 전체 레이아웃 조정 및 저장
 plt.tight_layout(rect=[0, 0.03, 1, 0.93])
-save_path = "c:/Users/k0104/Downloads/역학_Term_Project/chameleon_field_distribution.png"
+save_path = Path(__file__).with_name("chameleon_field_distribution.png")
 plt.savefig(save_path, bbox_inches='tight')
 plt.close()
 

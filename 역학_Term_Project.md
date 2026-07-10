@@ -1,4 +1,6 @@
 # Physical laws that hide like a chameleon: Environmental Density-Dependent Dynamics Simulation
+
+> **2026-07 revision notice:** This file is retained as the initial exploration note. Its original claim that a static one-dimensional random medium “proves chaos” has been withdrawn: such an autonomous conservative system is integrable. Use `README.md`, `term_project_paper.tex`, and `presentation.tex` for the verified nondimensionalization, RK45/RK4 method, physical constraints, and corrected conclusion. Repository: <https://github.com/Lasqui-Ponto/Mechanics_Term_Project>
 ## Modeling the Fifth Force through the 'Chameleon Screening' Effect
 
 ---

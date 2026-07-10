@@ -7,6 +7,8 @@
 *.snm
 *.fdb_latexmk
 *.fls
+*.xdv
+*.synctex.gz
 
 # Python temporary files
 __pycache__/
@@ -20,6 +22,12 @@ __pycache__/
 venv/
 env/
 ENV/
+.uv-cache/
+.matplotlib/
+
+# Generated PDF-review intermediates
+tmp/
+output/
 
 # OS files
 Thumbs.db
