@@ -1,0 +1,643 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{kotex}
+\setmainhangulfont[AutoFakeBold=2,AutoFakeSlant=.2]{Noto Serif CJK KR}
+\setsanshangulfont[AutoFakeBold=2,AutoFakeSlant=.2]{Noto Sans CJK KR}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{xurl}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+\graphicspath{{figures_ko/}{figures/}}
+\definecolor{navy}{HTML}{17324D}
+\definecolor{teal}{HTML}{147D92}
+\definecolor{orange}{HTML}{D97720}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=navy,
+  citecolor=teal,
+  urlcolor=orange,
+  pdftitle={카멜레온 얇은 껍질 근사는 언제 실패하는가?},
+  pdfauthor={이동규}
+}
+\setlist{nosep,leftmargin=*}
+\sisetup{detect-all,retain-zero-exponent=true}
+\crefname{equation}{식}{식}
+\Crefname{equation}{식}{식}
+\crefname{figure}{그림}{그림}
+\Crefname{figure}{그림}{그림}
+\crefname{table}{표}{표}
+\Crefname{table}{표}{표}
+\crefname{section}{절}{절}
+\Crefname{section}{절}{절}
+
+\newcommand{\mpl}{M_{\mathrm{Pl}}}
+\newcommand{\qnum}{Q_{\mathrm{num}}}
+\newcommand{\qlr}{Q_{\mathrm{LR}}}
+\newcommand{\qsurf}{Q_{\mathrm{surf}}}
+\newcommand{\qctr}{Q_{\mathrm{ctr}}}
+\newcommand{\qms}{Q_{\mathrm{MS}}}
+\newcommand{\qas}{Q_{\mathrm{AS}}}
+\newcommand{\mout}{\mu_{\infty}}
+\newcommand{\minn}{\mu_{c}}
+
+\title{\bfseries\Large
+카멜레온 얇은 껍질 근사는 언제 실패하는가?\\[3pt]
+\large 스칼라 전하의 수치적 정확도와 힘비 임계값 지도}
+\author{이동규\\
+\small 서울대학교 물리천문학부\\
+\small 고전역학 학기말 프로젝트(독립 개정 연구)}
+\date{2026년 7월 10일}
+
+\begin{document}
+\renewcommand{\abstractname}{초록}
+\renewcommand{\figurename}{그림}
+\renewcommand{\tablename}{표}
+\renewcommand{\refname}{참고문헌}
+\maketitle
+
+\begin{abstract}
+장거리 얇은 껍질 법칙은 카멜레온 차폐를 받는 구가 얼마나 강한 제5힘을
+만들어 내는지를 예측하는 편리한 근사법이다. 그러나 이 법칙은 자체적인 오차
+추정치를 제공하지 않으며, 유한한 작용 범위를 갖는 확장 원천을 어떻게 나타내야
+하는지도 유일하게 정하지 않는다. 본 연구는 이 근사가 언제 정확한지, 그리고
+그 유한 범위 연장이 예시적인 힘비 임계값 판정을 바꿀 수 있는지를 묻는다.
+역멱법칙 퍼텐셜 $V(\phi)=\Lambda^5/\phi$에 대하여, 밀도 대비
+$10^2\leq\rho_c/\rho_\infty\leq10^5$와 외부 작용 범위
+$10^{-3}\leq m_\infty R\leq0.3$에서 로그 간격으로 배치한 725개 점의 완전한
+비선형 구면 경계값 문제를 풀었다. 두 영역 콜로케이션 방법으로 불연속적인 원천 경계를
+그대로 보존하고, 두 개의 국소 유카와 꼬리 추정량으로 수치적 스칼라 전하를
+측정하였다. 절단된 장거리 전하를 원천의 표면에 놓아 연장하면 격자의 68.8\%에서
+10\% 이내이며 최대 62.6\%까지 과대예측하지만, 중심에 놓아 연장하면 91.3\%에서
+10\% 이내이다. 따라서 유일한 ``표준적'' 유한 범위 연장은 존재하지 않는다.
+여기서 구성하고 벤치마크한 활성 껍질 유카와 적분은 방사형 원천 분포를 모형화하며,
+동일한 격자의 99.7\%에서 10\% 이내이다(오차 중앙값 0.39\%, 최댓값 13.1\%).
+정확도 지도에는 $x_{\max}=160$을 사용하였다. 층화하여 선택한 14개 점에서 수행한
+$160\to240$ 검증에서 전하는 최대 0.056\% 변했고, 10\% 정확도 분류가 바뀐 점은
+없었다. 예시적인 힘비 임계값 대리지표 $|a_5/a_N|_\star=10^{-2}$에서는 두 단순 연장이
+격자의 네 점에서 서로 다른 판정을 내리지만, 어느 연장도 수치적 판정과 관례에
+독립적으로 불일치하지 않는다. 이 결과는 무차원 구면 모형의 방법론적 결과이며,
+실험의 검출 범위나 배제 결과가 아니다. 보수적인 유효성 필터도 격자 구성에
+사용하지 않은 12개의 로그 중점에서 별도로 검증하였다.
+\end{abstract}
+
+\section{서론}
+
+카멜레온 차폐는 큰 척도에서는 가볍고 물질과 결합하는 스칼라 장을 허용하면서도,
+국소적인 제5힘 실험의 엄격한 제약과 양립하도록 제안되었다
+\cite{KhouryPRL,KhouryPRD}. 이 이론을 규정하는 역학적 특징은 환경 의존성이다.
+유효 퍼텐셜의 최솟값과 곡률이 주변 밀도에 따라 달라진다. 따라서 밀도가 높은
+물체는 내부 장이 거의 일정해지고, 표면 부근의 얇은 층을 통해서만 주로 스칼라
+장을 내보낼 수 있다. 표준적인 장거리 점근 해석에서는 이 비선형 경계값 문제
+전체를 하나의 스칼라 전하 인자로 대체한다.
+\begin{equation}
+  \qlr=\min(3\epsilon,1),\qquad \epsilon\equiv\frac{\Delta R}{R},
+  \qquad m_\infty R\ll1.
+  \label{eq:canonical}
+\end{equation}
+이 식은 물리적으로 명료하고 계산 비용이 작으므로 현상론적 추정과 실험 논의에서
+널리 사용된다 \cite{BurrageSakstein}. 그러나 이는 오차가 통제된 수치 방법이
+아니다. 유도 과정은 껍질이 얇고, 내부가 평형에 도달했으며, 원천의 크기가 외부
+콤프턴 파장보다 훨씬 작다고 가정한다. $m_\infty R$가 유한하면 활성 스칼라 원천의
+방사상 위치가 중요해지지만, 장거리 공식 자체는 그 위치를 정해 주지 않는다.
+
+얇은 껍질 및 껍질 없음 점근해의 유효성은 새로운 연구 주제가 아니다. Tamaki와
+Tsujikawa는 $m_cR\rightarrow\infty$일 때 익숙한 장 분포가 복원됨을 명시적으로
+보이고, 서로 다른 껍질 없음 해를 연구하였다 \cite{TamakiTsujikawa}. 특정 실험실
+기하에 대해서는 완전한 수치 계산도 수행되어 왔다. 예를 들어 Elder 등은 단순한
+원자 간섭계 해석 추정치와 3차원 수치 계산 사이에 약 20\%의 차이가 있음을
+밝혔다 \cite{Elder2016}. 따라서 여기서의 더 한정된 목표는 이 근사를 최초로
+검증했다고 주장하는 것이 아니다. 목표는 \textbf{정확도-관측 가능성 연결}을
+구축하는 것이다. 즉, 구면 전이 영역 전반에서 체계적인 오차 지도를 만들고,
+그 불확실성을 예시적인 힘비 판정으로 전파한다.
+
+본 연구는 다음 세 질문을 다룬다.
+\begin{enumerate}
+  \item 장거리 법칙은 어느 영역에서 수치적 스칼라 전하를 10\% 정확도로
+  예측하는가?
+  \item 중심점 및 표면 껍질 유한 범위 연장은 얼마나 크게 불일치하며, 활성 껍질
+  적분은 완전한 BVP를 모형화할 수 있는가?
+  \item 그 연장 방식의 모호성은 ``$|a_5/a_N|$가 주어진 임계값보다 큰가?''라는
+  대리지표 질문의 답을 언제 바꾸는가?
+\end{enumerate}
+모든 코드, 데이터, 테스트, 그림 생성 명령은 공개 저장소
+\href{https://github.com/Lasqui-Ponto/Mechanics_Term_Project/tree/agent/improve-chameleon-project/Thin_Shell_Study}{GitHub의 Thin\_Shell\_Study}에서 확인할 수 있다.
+
+\section{물리 모형과 완전한 무차원화}
+
+\subsection{유효 퍼텐셜과 밀도 의존 유효질량}
+
+역멱법칙 퍼텐셜과 등각 물질 결합을 갖는 양의 스칼라 장에 대해 다음을 택한다.
+\begin{equation}
+ V(\phi)=\frac{\Lambda^5}{\phi},\qquad
+ A(\phi)=\exp\!\left(\frac{\phi}{M_c}\right),
+ \qquad M_c\equiv\frac{\mpl}{\beta}.
+ \label{eq:model}
+\end{equation}
+밀도 $\rho$인 비상대론적 물질에 대한 정적 약한 중력 방정식은
+\begin{equation}
+ \nabla^2\phi=-\frac{\Lambda^5}{\phi^2}
+ +\frac{\rho}{M_c}\exp\!\left(\frac{\phi}{M_c}\right).
+ \label{eq:physical_bvp}
+\end{equation}
+실험실 영역에서는 $\phi/M_c\ll1$이므로 지수항을 정확하게 선형화할 수 있다.
+이때 밀도에 따른 평형값과 유효질량은
+\begin{equation}
+ \phi_{\min}(\rho)=\left(\frac{\Lambda^5M_c}{\rho}\right)^{1/2},
+ \qquad
+ m_{\mathrm{eff}}^2(\rho)=\frac{2\Lambda^5}{\phi_{\min}^3}
+ \propto\rho^{3/2}.
+ \label{eq:minimum_mass}
+\end{equation}
+따라서 밀도가 높아지면 평형 장은 작아지고 콤프턴 작용 범위
+$\lambda_c=m_{\mathrm{eff}}^{-1}$도 짧아진다. 이것이 차폐의 역학적 근원이다.
+
+무차원화 과정에서 무차원 결합계수를 빠뜨리지 않는 것이 중요하다. 다음과 같이
+정의하면
+\begin{equation}
+ x=\frac rR,\quad u=\frac\phi{\phi_\infty},\quad
+ \widetilde\rho=\frac\rho{\rho_\infty},\quad
+ D=\frac{\phi_\infty}{M_c},
+\end{equation}
+\textbf{선형화하지 않은} $n=1$ 방정식은
+\begin{equation}
+ u''+\frac{2}{x}u'=-\frac{A}{u^2}+B\widetilde\rho e^{Du},
+ \quad
+ A=\frac{\Lambda^5R^2}{\phi_\infty^3},\quad
+ B=\frac{\rho_\infty R^2}{M_c\phi_\infty}.
+ \label{eq:complete_dimensionless}
+\end{equation}
+$\phi_\infty$를 외부의 정확한 최솟값으로 택하면 $A=Be^D$이고
+$(m_\infty R)^2=A(2+D)$이다. 그러므로 계수 $D$는 독립적이며 단순히 없앨 수 없다.
+주요 주사에서는 표준 얇은 껍질 공식 자체가 유도되는 통제된 극한
+$D\rightarrow0$을 의도적으로 택한다. 다음을 정의하면
+\begin{equation}
+ \delta\equiv\frac{\rho_c}{\rho_\infty},\qquad
+ \mu\equiv m_\infty R,
+\end{equation}
+구면 장 방정식은
+\begin{equation}
+ u''+\frac{2}{x}u'=\frac{\mu^2}{2}
+ \left[\widetilde\rho(x)-u^{-2}\right],
+ \qquad
+ \widetilde\rho(x)=
+ \begin{cases}\delta,&x<1,\\1,&x>1.\end{cases}
+ \label{eq:main_bvp}
+\end{equation}
+이 된다. 중심의 정칙성과 환경과의 일치는 다음을 요구한다.
+\begin{equation}
+ u'(0)=0,\qquad u(\infty)=1.
+ \label{eq:bc}
+\end{equation}
+이 모형에서는
+\begin{equation}
+ u_c=\delta^{-1/2},\qquad m_cR=\mu\delta^{3/4}.
+ \label{eq:core_relations}
+\end{equation}
+따라서 두 입력 $(\delta,\mu)$는 껍질이 충분히 얇은지, 그리고 중심부가 그
+최솟값에 도달할 수 있는지를 진단하는 두 조건을 함께 결정한다.
+
+\section{장 분포에서 스칼라 전하로}
+
+\subsection{장거리 법칙과 유한 범위 연장}
+
+표준적인 고밀도 대비 관례에 따라 물체의 총질량
+$M_s=4\pi\rho_cR^3/3$과 표면 퍼텐셜 $\Phi_N=GM_s/R$을 사용한다. 껍질 매개변수는
+\begin{equation}
+ \epsilon=\frac{\phi_\infty-\phi_c}{6\beta\mpl\Phi_N}
+ =\frac{1-u_c}{B\delta}
+ =\frac{2(1-\delta^{-1/2})}{\mu^2\delta},
+ \qquad B=\frac{\mu^2}{2}.
+ \label{eq:epsilon}
+\end{equation}
+장거리 예측은 \cref{eq:canonical}이다. 인자 $3\epsilon$은 껍질 부피를 1차까지
+계산한 결과이며, 이를 1에서 절단하는 것부터 이미 경험적인 전이 규칙이다.
+$\mu$가 유한하면 추가적인 관례가 필요하다. 아래에서 사용하는 표면 기준 꼬리에서
+두 가지 단순한 연장은
+\begin{equation}
+ \qsurf=\qlr,\qquad \qctr=e^{-\mu}\qlr.
+ \label{eq:two_continuations}
+\end{equation}
+이다. 이는 각각 유효 전하를 표면과 중심에 놓는다. $\mu\to0$에서는 서로 일치하지만,
+장거리 법칙만으로는 어느 쪽도 유일하게 선택되지 않는다.
+
+조금 더 정교한 정합에서는 유한한 껍질 부피를 유지한다. 고정된 중심부의 반지름이
+$r_s=qR$라면, 물질항이 지배적이라고 근사한 껍질을 적분하고 질량 없는 외부 해와
+정합하여
+\begin{equation}
+ \epsilon=\frac{1-q^2}{2},\qquad
+ \qms=1-q^3=1-\max(1-2\epsilon,0)^{3/2}.
+ \label{eq:matched_shell}
+\end{equation}
+을 얻는다. 이는 1차에서 $3\epsilon$과 일치하며 $\epsilon=1/2$에서 차폐되지 않은
+극한에 매끄럽게 도달한다.
+
+균일한 확장 원천의 표준 유카와 적분은 이 표면 기준 관례에서
+\begin{equation}
+ Q_{\mathrm{lin}}(\delta,\mu)=
+ \left(1-\delta^{-1}\right)
+ \frac{3e^{-\mu}}{\mu^3}\left(\mu\cosh\mu-\sinh\mu\right),
+ \label{eq:linear_sphere}
+\end{equation}
+을 준다. 여기서 $1-\delta^{-1}$은 균일한 배경 원천을 빼는 항이다. 중심 기준
+점원천에 비하면 대응하는 형태 인자는 $3g(\mu)/\mu^3>1$이므로, ``유한 범위
+억제''는 기준에 무관한 표현이 아니다. 표준 방사형 유카와 가중치를 질량 없는
+정합 반지름을 갖는 껍질에 적용하면 다음과 같은 본 프로젝트의 가설적 모형을
+얻게 된다.
+\begin{align}
+ g(z)&=z\cosh z-\sinh z,\\
+ \qas&=\frac{3e^{-\mu}}{\mu^3}
+ \left[g(\mu)-g(\mu q)\right],
+ \qquad q=\sqrt{\max(1-2\epsilon,0)}.
+ \label{eq:yukawa_matched}
+\end{align}
+이는 $\mu\rightarrow0$에서 \cref{eq:matched_shell}로 환원되고, $\epsilon$과 $\mu$가
+모두 작을 때 $3\epsilon$으로 환원된다. 전체가 활성화된 극한에서는 표준 균일 구의
+방사형 인자를 가지지만 작은 배경 빼기 항은 생략한다. 식
+\eqref{eq:yukawa_matched}은 여기서 구성하고 벤치마크한 것이며, 문헌상 우선권을
+주장하거나 비선형 해가 반드시 가져야 하는 성질로 가정한 것이 아니다. 또한 유한한
+$\mu$에서 중심부 반지름을 자기일관되게 다시 정합하지 않는다.
+
+\subsection{수치적 전하와 힘비}
+
+외부의 선형 영역에서 수치적 장을
+\begin{equation}
+ u(x)=1-s\qnum\frac{e^{-\mu(x-1)}}{x},
+ \qquad s\equiv\frac{B\delta}{3}.
+ \label{eq:exterior_charge}
+\end{equation}
+으로 쓴다. 이는 총질량에 대한 무차원 스칼라 전하를 정의한다. 배경의 기여는
+BVP 안에서 동역학적으로 상쇄된다. 이 식으로부터 두 국소 추정량을 얻는다.
+\begin{align}
+ Q_A(x)&=\frac{x[1-u(x)]e^{\mu(x-1)}}{s},\\
+ Q_\nabla(x)&=\frac{x^2u'(x)e^{\mu(x-1)}}{s(1+\mu x)}.
+ \label{eq:charge_estimators}
+\end{align}
+보고하는 $\qnum$은 정확한 원천항과 그 선형화의 차이가 2\%보다 작은 외부 구간에서
+$Q_A$의 강건한 중앙값이다. 기울기 추정량은 독립적인 진단에 사용한다.
+
+위치 $x_p=r_p/R$에 있는 스칼라 전하 $Q_t$의 시험 물체에 대해 이상화한 힘비는
+\begin{equation}
+ \alpha_5\equiv\left|\frac{a_5}{a_N}\right|
+ =2\beta^2Q_sQ_t(1+\mu x_p)e^{-\mu(x_p-1)}.
+ \label{eq:force_ratio}
+\end{equation}
+차폐되지 않은 원자는 $Q_t\simeq1$이지만 거시적인 시험 물체는 $Q_t<1$일 수 있다
+\cite{BurrageCopelandHinds}. 이 차이는 물리적 반응에 관한 것일 뿐이다. 원자
+간섭계와 벌크 힘 센서는 잡음, 계통 오차, 기하가 서로 다르므로 $Q_t$만으로
+계측기의 우열을 정할 수는 없다.
+
+\section{수치 방법과 검증}
+
+\subsection{두 영역 경계값 문제 풀이법}
+
+밀도는 $x=1$에서 불연속이다. 그 계단을 평활화하면 실제 얇은 껍질보다 더 넓은
+인위적인 경계면 너비가 생길 수 있다. 따라서 내부 $0\leq x\leq1$과 외부
+$1\leq x\leq x_{\max}$를 공통 배치 좌표의 두 복사본으로 사상한다. 표면에서는
+장과 그 방사 미분을 정확히 정합한다. 유한한 외부 경계에서는 정확도가 낮은
+유한 반지름 디리클레 조건 대신 유카와 로빈 조건
+\begin{equation}
+ u'(x_{\max})=\left(\mu+\frac{1}{x_{\max}}\right)[1-u(x_{\max})]
+ \label{eq:robin}
+\end{equation}
+을 사용한다.
+
+스칼라 전하 자체의 조건수를 개선하기 위해
+\begin{equation}
+ x(u-1)=sv.
+\end{equation}
+로 정의한다. 그러면 외부 해는 $v=-\qnum e^{-\mu(x-1)}$가 되어, $u-1$이 매우
+작을 때도 피팅할 미지수가 1 정도의 크기를 유지한다. 강하게 차폐된 점에는 이
+선형 장 표현을 사용한다. 전이 영역과 차폐되지 않은 점에는 양의 값만 갖는 표현
+$u=\exp(sv/x)$를 사용하여 뉴턴 반복에서 비물리적인 음의 값이 생기는 것을
+방지한다. 두 표현은 같은 \cref{eq:main_bvp}을 푼다. 전환 영역 부근의 교차검증
+점에서 두 표현이 내놓는 전하의 상대적 차이는 $2.3\times10^{-9}$에 불과하다.
+
+격자 지도에는 명목상 허용오차 $2\times10^{-4}$인 SciPy의 4차 배치 BVP 알고리즘과
+적응형 격자 세분화를 사용하고, 검증에서는 허용오차를 $2\times10^{-7}$까지
+줄였다. 주사 범위는
+\begin{equation}
+ 10^2\leq\delta\leq10^5\quad(25\ \text{개 점}),\qquad
+ 10^{-3}\leq\mu\leq0.3\quad(29\ \text{개 점}),
+ \label{eq:grid}
+\end{equation}
+이며 로그 간격으로 배치한 725개의 매개변수 조합으로 이루어진다. 모든 점이
+수렴하였다. 정확도 지도에는 $x_{\max}=160$을 사용하고, 영역 크기 검증에는
+$x_{\max}=240$을 사용하였다. 이 격자는 수치 실험 설계이지 확률분포가 아니다.
+따라서 아래의 백분율은 언제나 이 표본점 중의 비율을 뜻한다.
+
+\subsection{검증 결과}
+
+\Cref{fig:verification}은 세 가지 독립 검사를 요약한다. 첫째, 비선형 문제가 균일한
+선형 유카와 구로 접근해야 하는 약한 밀도 대비 $\delta=1.01$에서
+$\mu=(0.01,0.03,0.1,0.3)$ 전반의 최대 오차는 $2.8\times10^{-5}$이다. 둘째, 전이
+벤치마크 $(\delta,\mu)=(10^5,0.01)$에서 $x_{\max}$를 160에서 240으로 늘리면
+$Q$가 0.0528\% 변하고, 풀이 허용오차를 두 자릿수만큼 줄이면
+$5.6\times10^{-7}$만큼 변한다. 셋째, 점근 구간에서 진폭 추정량과 기울기 추정량은
+0.0339\% 이내에서 일치한다. 전체 지도에서 두 추정량의 최대 불일치는 0.0481\%이다.
+그러므로 수치적 추출 불확실성은 물리적 근사의 목표 오차인 10\%보다 훨씬 작다.
+별도의 층화된 14개 점 검증에는 격자의 네 모서리, 그림에 표시한 두 벤치마크,
+그리고 표면 기준 연장 및 활성 껍질 모형의 10\% 오차 경계에 가장 가까운 점을
+포함하였다. 이 검증에서 $160\to240$으로 영역을 늘렸을 때 전하의 최대 변화는
+0.0560\%였고, 표면·중심·활성 껍질 모형 중 어느 것의 10\% 정확도 분류도 바뀌지
+않았다. 이는 판정 경계를 직접 검증하지만, 전체 지도의 모든 점에 대한 개별적인
+수렴 증명은 아니다.
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=\textwidth]{verification.png}
+ \caption{수치 검증. (a) 약한 원천 극한에서 비선형 BVP가 알려진 균일 구의 유카와
+ 진폭을 재현한다. (b) 외부 영역 크기와 배치 허용오차에 대한 수렴성. (c) 서로
+ 독립적인 외부 진폭 및 기울기 전하 추정량이 같은 평탄부로 접근한다.}
+ \label{fig:verification}
+\end{figure}
+
+\section{결과}
+
+\subsection{세 가지 차폐 영역}
+
+\Cref{fig:profiles}은 차폐되지 않은 해, 전이 해, 차폐된 해의 대표 사례를 보여준다.
+차폐되지 않은 경우 장은 원천 전체에서 변하며 $\qnum=0.885$이다. 전이 사례에서는
+내부 장이 해당 밀도의 최솟값에 가깝지만 표면 전이 영역이 뚜렷하게 넓고,
+$\qnum=0.499$이다. 강하게 차폐된 원천의 내부 장은 거의 고정되어 있으며
+$\qnum=5.47\times10^{-3}$이다. 모든 경우 두 외부 전하 추정량은 같은 평탄부를
+이룬다. 따라서 그림의 전하는 얇은 껍질을 가정해 삽입한 값이 아니라 완전한 해에서
+측정한 값이다.
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.86\textwidth]{profiles_and_charge_extraction.png}
+ \caption{완전한 비선형 장 분포와 전하 추출. 수직 점선은 원천의 표면을 나타낸다.
+ 오른쪽 패널의 실선과 파선은 각각 \cref{eq:charge_estimators}의 진폭 추정량과
+ 기울기 추정량이다.}
+ \label{fig:profiles}
+\end{figure}
+
+\subsection{정확도 지도와 실패 조건}
+
+\Cref{fig:atlas}는 근사의 유효성을 보여주는 핵심 결과이다. 색은 부호가 있는
+로그 오차를 나타내며, 빨간색은 근사가 수치적 전하를 과대예측함을 뜻한다. 검은
+곡선은 10\% 오차 경계이다. 표면으로부터 연장한 표준 장거리 전하는 $\mu$가 작은
+영역에서는 정확하지만 넓은 전이 띠에서 실패한다. 중심점 연장은 대체로 더
+정확하지만 양과 음의 편향이 모두 나타난다. 활성 껍질 적분은 방사형 원천 분포를
+모형화하여 이러한 경향의 대부분을 제거한다.
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=\textwidth]{accuracy_atlas.png}
+ \caption{장거리 법칙의 표면 껍질 및 중심점 연장과 활성 껍질 적분에 대한 부호가
+ 있는 스칼라 전하 오차. 검은 곡선은 10\% 상대오차, 파선은
+ $\epsilon=0.01,0.1,0.5$를 나타낸다. 유한한 $\mu$에서의 연장은 $\epsilon$만으로
+ 정해지지 않는다.}
+ \label{fig:atlas}
+\end{figure}
+
+\begin{table}[H]
+ \centering
+ \caption{로그 간격으로 배치한 725개 격자점 전체의 오차 통계.}
+ \label{tab:accuracy}
+ \begin{tabular}{lrrrr}
+  \toprule
+  근사법 & 오차 중앙값 & 90번째 백분위수 & 최댓값 & 10\% 이내 \\
+  \midrule
+  표면 껍질 $\qsurf$ & 2.78\% & 23.0\% & 62.6\% & 68.8\% \\
+  중심점 $\qctr$ & 0.566\% & 8.89\% & 30.1\% & 91.3\% \\
+  유한 껍질만 적용 $\qms$ & 2.18\% & 18.0\% & 37.6\% & 77.5\% \\
+  활성 껍질 적분 $\qas$ & 0.391\% & 3.66\% & 13.1\% & 99.7\% \\
+  \bottomrule
+ \end{tabular}
+\end{table}
+
+표면 껍질 연장은 모든 표본점에서 $\qnum$보다 크다. 최대 오차 62.6\%는
+$(\delta,\mu)=(100,0.245)$에서 나타나며, 이때 $\epsilon=0.301$이고
+$m_cR=7.74$이다. 작은 껍질 가정과 무거운 중심부 가정 중 어느 것도 매개변수상
+충분히 확실하지 않고, 유한한 작용 범위도 무시할 수 없다. 더 놀랍게도 익숙한
+조건인 $\epsilon<0.1$과 $m_cR>10$만 적용하는 것은 충분하지 않다. 이 두 조건을
+만족하는 180개 표본점 중 10\% 정확도 목표를 만족하는 비율은 $\mu$가 여전히 너무
+클 수 있기 때문에 32.8\%에 불과하다. 이 격자로부터 선택한 보수적인 필터는
+\begin{equation}
+ \boxed{\epsilon<0.1,\qquad m_cR>10,\qquad m_\infty R<0.035.}
+ \label{eq:validity_gate}
+\end{equation}
+이다. 이 필터를 통과하는 정확도 지도의 17개 점은 모두 10\% 이내이며, 최대 오차는
+8.09\%이다. 이어서 지도에 포함하지 않은 로그 중점 조합 12개를 검사한 결과, 모두
+10\% 이내이고 최대 오차는 8.15\%였다. 이는 명시한 영역에서 경험적으로 검증된
+필터이지 보편적인 정리가 아니다. 이 결과의 개념적 의미는 작은 껍질과 무거운
+중심부만으로는 유한 범위 연장이 정당화되지 않는다는 데 있다.
+
+\Cref{fig:comparison}은 이 차이를 정량적으로 보여준다. 두 단순 연장은 격자의 서로
+다른 부분을 포괄한다. 활성 껍질 적분은 수치적 대각선을 밀접하게 따른다. 10\%
+밖에 있는 두 점은 낮은 밀도 대비와 중간 정도 차폐가 만나는 구석에 있으며,
+고정된 중심부를 갖는 껍질 모형의 신뢰도가 가장 낮은 영역이다.
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=\textwidth]{charge_comparison.png}
+ \caption{점별 예측과 구간별 오차. 오른쪽 패널의 채워진 띠는 $\epsilon$의 각
+ 구간에서 중앙값부터 90번째 백분위수까지를 나타낸다. 유한 범위 연장의 오차가
+ 비단조적이라는 사실은 $\epsilon$만으로 유효성을 완전히 판단할 수 없음을
+ 확인해 준다.}
+ \label{fig:comparison}
+\end{figure}
+
+\subsection{예시적인 힘비 임계값 지도}
+
+전하 불확실성을 무차원 힘비 임계값 대리지표 판정으로 전파하기 위해 \cref{eq:force_ratio}에서
+$\beta=1$, $Q_t=1$, $x_p=1.5$로 둔다. \cref{fig:detectability}의 왼쪽 패널은
+가상의 차폐되지 않은 탐침에 대한 $|a_5/a_N|$를 보여준다. 이는 장치의 검출 범위나
+발견 예측이 아니다. $(\delta,\mu)$만으로는 절대적인 뉴턴 가속도가 정해지지 않고,
+검출기 잡음, 원천의 크기, 계통 불확실성도 포함하지 않았기 때문이다.
+
+명확한 강건성 검사를 위해
+$\alpha_\star=|a_5/a_N|_\star=10^{-2}$를 택한다. 예측된 힘비가 이 예시적 임계값을
+넘으면 ``초과''로 분류한다. 표면 연장과 중심 연장은 격자의 네 점에서 서로 다른
+판정을 내린다. 이 네 점 모두에서 수치적 분류는 둘 중 하나의 연장과 일치하므로,
+연장 관례에 독립적인 불일치는 없다. 격자 내부에서 임계값을 가로지르는 7개의
+밀도 행에 대해, 수치 등고선 변위의 중앙값은 표면 연장에서 0.032 dex이고 중심
+연장에서 0.0066 dex이다. 세 번째 패널은 두 단순 연장 오차 중 큰 값을
+$\alpha_\star$ 단위로 나타낸다.
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=\textwidth]{detectability_map.png}
+ \caption{정확도-관측 가능성 대리지표. (a) 차폐되지 않은 탐침에 대한 수치적
+ 제5힘 비와 수치해·표면 껍질·중심점 연장의 임계값 등고선. (b) 두 유한 범위
+ 연장이 일치하거나 불일치하는 점. (c) 두 단순 연장 오차 중 큰 값을 예시적 임계값
+ $\alpha_\star=10^{-2}$의 단위로 표시한 값. 흰색 등고선은 단위 오차를 나타낸다.}
+ \label{fig:detectability}
+\end{figure}
+
+실제 과거의 영결과 실험에 대해서는 검출 범위 비
+$\mathcal R=|a_5|/a_{\mathrm{lim}}$를 사용해야 한다. $\mathcal R>1$은 기하,
+신호 모형, 방해 매개변수 처리, 신뢰구간 구성이 서로 일치할 때에만 예측 신호가
+공표된 한계를 넘는다는 뜻이며, 힘이 발견되었다는 뜻은 아니다. 미래 실험 설계에는
+$\mathcal D=|\Delta a_5|/\sigma_{\Delta a}$를 사용하고 통계 및 계통 오차 가정을
+명시해야 한다. 원자 간섭계 실험 \cite{Hamilton2015,Sabulsky2019}과 부유형 벌크
+센서 \cite{Yin2022}는 서로 매우 다른 차폐 및 잡음 메커니즘에도 불구하고 두 탐침
+유형 모두 강력할 수 있음을 보여준다.
+
+\section{논의}
+
+\subsection{본 결과의 기여}
+
+이 프로젝트는 이제 통상적인 연구 논리를 따른다.
+\begin{description}[style=nextline]
+ \item[문제.] 장거리 전하 근사법은 차폐 전이 영역에서 오차를 제시하지 못하며,
+ 유일한 유한 범위 연장도 갖지 않는다.
+ \item[제안한 방법.] 비선형 구면 BVP를 풀고, 껍질을 가정하지 않고 외부 전하를
+ 측정하며, 명시적인 두 연장을 비교하고, 그 모호성을 힘비 임계값 대리지표로 전파한다.
+ \item[결과.] 유한한 작용 범위에서 표면 연장과 중심 연장은 상당히 다르며,
+ 활성 껍질 방사형 적분은 수치 결과의 경향 대부분을 모형화한다.
+ \item[제한된 기여.] 정확도 지도는 별도 검증점으로 확인한 유효성 필터를 제공하며,
+ \cref{eq:yukawa_matched}은 이 격자의 99.7\%에서 10\% 정확도로 작동한다.
+\end{description}
+따라서 이 연구의 새로움은 ``차폐를 발견했다''는 데 있지 않으며, 최초로 얇은
+껍질 근사를 검증했다고 주장하는 데도 있지 않다. 표준 유카와 방사형 적분으로
+구성한 활성 껍질 가설적 모형의 재현 가능한 벤치마크와 함께, 근사 오차와
+관측 가능성 대리지표를 체계적으로 연결한 데 있다.
+
+\subsection{실험실 계산과의 관계}
+
+실험실 예측에는 여기서 제외한 추가 요소들이 있다. 챔버 벽은 환경 장을 정하고
+힘을 크게 바꿀 수 있으며, 네 영역을 포함한 수치 연구는 기하와 벽이 중요함을
+보였다 \cite{Schlogel2016}. Elder 등의 완전한 3차원 계산에서는 특정 원자 간섭계
+기하에 대한 단순 해석 예측이 약 20\% 높았다 \cite{Elder2016}. 이는 그 구성에서의
+변화 방향만을 보여 주며, 벽과 기하는 예측을 어느 방향으로도 바꿀 수 있다. 이
+백분율은 \cref{tab:accuracy}와 직접 비교할 수 없다. 본 연구는 하나의 균일한 구만
+분리하여 다루고 챔버 기하를 의도적으로 제외했기 때문이다.
+
+기초적인 암흑에너지 모형의 현재 상태도 정직하게 밝혀야 한다. Yin 등은 부유형
+힘 센서 실험이 그들이 연구한 매개변수 공간에서 우주론적으로 가능한 기본
+카멜레온 모형을 배제한다고 보고하였다 \cite{Yin2022}. 본 계산은 이 주장을 다시
+검토하지 않는다. 여기서는 $n=1$ 카멜레온을 차폐 근사와 실험 설계 편향을 연구하기
+위한 명료한 비선형 역학 실험실로 사용한다.
+
+\subsection{한계와 다음 검증}
+
+결론은 정적이고 고립된 균일 구형 원천, $n=1$, 약한 등각 결합 극한
+$D\rightarrow0$, 그리고 표본화한 $(\delta,\mu)$ 범위에 조건부로 성립한다. 다음은
+포함하지 않았다.
+\begin{itemize}
+ \item 챔버 벽, 유한 진공 영역, 원천 변조, 비구면 기하;
+ \item 시험 물체의 수치적 스칼라 전하 또는 장치별 잡음;
+ \item 다른 역멱 지수, 상대론적 조밀도, 시간 의존 장;
+ \item 물리적 $(\Lambda,M_c)$ 배제 지도.
+\end{itemize}
+직접적인 다음 프로젝트로는 별도의 빈 챔버 BVP를 풀어 국소 환경 장을 정하고,
+원천과 벽 영역을 추가하며, 원자와 벌크 탐침을 각각의 $Q_t$와 $\sigma_a$를 사용해
+비교할 수 있다. 고립된 구의 정확도 지도를 분리해 유지하는 것이 중요하다.
+그렇지 않으면 얇은 껍질 근사 자체의 오차와 기하 오차를 구분할 수 없다.
+
+\section{결론}
+
+장거리 얇은 껍질 근사는 유용하지만, ``$\epsilon$이 작다''는 조건만으로 유일한
+유한 범위 예측이 정해지지는 않는다. 725개의 비선형 구면 해에서 표면 껍질 연장은
+격자의 68.8\%에서 10\% 이내이며 최대 62.6\%까지 과대예측할 수 있다. 중심점
+연장은 91.3\%에서 10\% 이내이다. 보수적 필터 $\epsilon<0.1$, $m_cR>10$,
+$m_\infty R<0.035$는 정확도 지도의 17개 점과 별도 검증한 12개의 중점에서 모두
+성공한다. 활성 껍질 유카와 적분은 격자의 99.7\%에서 10\% 정확도를 달성하며,
+오차 중앙값은 0.39\%이다. 층화하여 선택한 14개 점의 $160\to240$ 검증에서 전하의
+최대 변화는 0.056\%이고 10\% 정확도 분류가 바뀐 사례는 없었다. 하나의 예시적
+임계값에서 두 단순 연장은 네 점에서 불일치하지만, 어느 쪽도 관례와 독립적으로
+수치 결과와 불일치하지 않는다. 그러므로 이 연구의 한정된 결론은 실험 예측이라는
+주장보다 더 명확하다. 차폐된 원천을 유한한 작용 범위로 연장하는 방법은
+$\epsilon$만이 아니라 활성 방사형 분포에 의해 결정된다.
+
+\appendix
+\section{재현 방법}
+\begingroup\small
+
+저장소 루트에서 다음 명령을 실행하면 전체 주사, 모든 그림, 지표가 다시 생성된다.
+\begin{verbatim}
+python -m Thin_Shell_Study.run_study --workers 4 --force
+python -m unittest discover -v
+\end{verbatim}
+주요 파일은 다음과 같다.
+\begin{itemize}
+ \item \texttt{Thin\_Shell\_Study/thin\_shell\_model.py}: BVP와 전하 모형;
+ \item \texttt{Thin\_Shell\_Study/run\_study.py}: 주사, 검증, 그림;
+ \item \texttt{Thin\_Shell\_Study/results/thin\_shell\_scan.csv}: 725개 점 전체;
+ \item \texttt{Thin\_Shell\_Study/results/gate\_validation\_midpoints.csv}: 별도 유효성 필터 검증;
+ \item \texttt{Thin\_Shell\_Study/results/stratified\_domain\_audit.csv}: 더 긴 영역에서의 표본 검사;
+ \item \texttt{Thin\_Shell\_Study/results/study\_metrics.json}: 보고한 수치;
+ \item \texttt{tests/test\_thin\_shell\_study.py}: 해석적·수치적 테스트.
+\end{itemize}
+여기서 사용한 소프트웨어 환경은 저장소의 \texttt{requirements.txt}에 기재된
+NumPy, SciPy, Matplotlib을 포함하는 Python 3이다.
+\endgroup
+
+\clearpage
+\begin{thebibliography}{99}
+
+\bibitem{KhouryPRL}
+J. Khoury and A. Weltman,
+``Chameleon Fields: Awaiting Surprises for Tests of Gravity in Space,''
+\emph{Phys. Rev. Lett.} \textbf{93}, 171104 (2004).
+\href{https://doi.org/10.1103/PhysRevLett.93.171104}{doi:10.1103/PhysRevLett.93.171104}.
+
+\bibitem{KhouryPRD}
+J. Khoury and A. Weltman,
+``Chameleon Cosmology,''
+\emph{Phys. Rev. D} \textbf{69}, 044026 (2004).
+\href{https://doi.org/10.1103/PhysRevD.69.044026}{doi:10.1103/PhysRevD.69.044026}.
+
+\bibitem{TamakiTsujikawa}
+T. Tamaki and S. Tsujikawa,
+``Revisiting Chameleon Gravity: Thin-Shells and No-Shells with Appropriate Boundary Conditions,''
+\emph{Phys. Rev. D} \textbf{78}, 084028 (2008).
+\href{https://doi.org/10.1103/PhysRevD.78.084028}{doi:10.1103/PhysRevD.78.084028}.
+
+\bibitem{BurrageSakstein}
+C. Burrage and J. Sakstein,
+``Tests of Chameleon Gravity,''
+\emph{Living Rev. Relativ.} \textbf{21}, 1 (2018).
+\href{https://doi.org/10.1007/s41114-018-0011-x}{doi:10.1007/s41114-018-0011-x}.
+
+\bibitem{BurrageCopelandHinds}
+C. Burrage, E. J. Copeland, and E. A. Hinds,
+``Probing Dark Energy with Atom Interferometry,''
+\emph{JCAP} \textbf{03}, 042 (2015).
+\href{https://doi.org/10.1088/1475-7516/2015/03/042}{doi:10.1088/1475-7516/2015/03/042}.
+
+\bibitem{Hamilton2015}
+P. Hamilton et al.,
+``Atom-Interferometry Constraints on Dark Energy,''
+\emph{Science} \textbf{349}, 849--851 (2015).
+\href{https://doi.org/10.1126/science.aaa8883}{doi:10.1126/science.aaa8883}.
+
+\bibitem{Elder2016}
+B. Elder et al.,
+``Chameleon Dark Energy and Atom Interferometry,''
+\emph{Phys. Rev. D} \textbf{94}, 044051 (2016).
+\href{https://doi.org/10.1103/PhysRevD.94.044051}{doi:10.1103/PhysRevD.94.044051}.
+
+\bibitem{Schlogel2016}
+S. Schl\"ogel, S. Clesse, and A. F\"uzfa,
+``Probing Modified Gravity with Atom Interferometry: A Numerical Approach,''
+\emph{Phys. Rev. D} \textbf{93}, 104036 (2016).
+\href{https://doi.org/10.1103/PhysRevD.93.104036}{doi:10.1103/PhysRevD.93.104036}.
+
+\bibitem{Sabulsky2019}
+D. O. Sabulsky et al.,
+``Experiment to Detect Dark Energy Forces Using Atom Interferometry,''
+\emph{Phys. Rev. Lett.} \textbf{123}, 061102 (2019).
+\href{https://doi.org/10.1103/PhysRevLett.123.061102}{doi:10.1103/PhysRevLett.123.061102}.
+
+\bibitem{Yin2022}
+P. Yin et al.,
+``Experiments with Levitated Force Sensor Challenge Theories of Dark Energy,''
+\emph{Nature Phys.} \textbf{18}, 1181--1185 (2022).
+\href{https://doi.org/10.1038/s41567-022-01706-9}{doi:10.1038/s41567-022-01706-9}.
+
+\end{thebibliography}
+
+\end{document}

@@ -20,12 +20,15 @@
 - `run_study.py`: 725점 scan, 검증, 그림, 지표 생성
 - `thin_shell_report.tex`: 새 독립 보고서
 - `thin_shell_presentation.tex`: 16:9 새 발표자료
+- `thin_shell_report_ko.tex`, `thin_shell_report_ko.pdf`: 한국어 보고서 원문과 PDF
+- `thin_shell_presentation_ko.tex`, `thin_shell_presentation_ko.pdf`: 한국어 16:9 발표자료 원문과 PDF
 - `presentation_notes_ko.md`: 한국어 슬라이드별 발표 노트
 - `results/thin_shell_scan.csv`: 전체 parameter scan
 - `results/gate_validation_midpoints.csv`: atlas에서 제외한 validity-filter 검증점
 - `results/stratified_domain_audit.csv`: 모서리·오차경계 인근의 longer-domain 검증점
 - `results/study_metrics.json`: 보고서에 사용한 정량 결과
 - `figures/`: 보고서 및 발표 그림
+- `render_korean_figures.py`, `figures_ko/`: 한국어 그래프 생성기와 출력 그림
 - `../tests/test_thin_shell_study.py`: 해석해·양의 장·charge plateau 검증
 
 ## 재현
@@ -34,6 +37,7 @@
 
 ```powershell
 .\.venv\Scripts\python.exe -m Thin_Shell_Study.run_study --workers 4 --force
+.\.venv\Scripts\python.exe -m Thin_Shell_Study.render_korean_figures
 .\.venv\Scripts\python.exe -m unittest discover -v
 ```
 
@@ -42,7 +46,11 @@ PDF 빌드:
 ```powershell
 latexmk -xelatex -interaction=nonstopmode -halt-on-error thin_shell_report.tex
 latexmk -xelatex -interaction=nonstopmode -halt-on-error thin_shell_presentation.tex
+latexmk -xelatex -interaction=nonstopmode -halt-on-error thin_shell_report_ko.tex
+latexmk -xelatex -interaction=nonstopmode -halt-on-error thin_shell_presentation_ko.tex
 ```
+
+영문 PDF와 한국어 PDF는 서로 별도 파일이며, 한국어판 빌드는 기존 영문 산출물을 덮어쓰지 않습니다.
 
 ## 해석할 때의 주의
 

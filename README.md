@@ -12,6 +12,8 @@ The repository now also contains a separate research package, [`Thin_Shell_Study
 
 The new study solves 725 spherical BVPs at an outer radius of $160R$, extracts a numerical scalar charge from the exterior Yukawa tail, compares surface-shell and center-point continuations, and benchmarks an active-shell radial integral. A 14-point stratified $160R\to240R$ audit checks grid corners and the 10% decision boundary. The study also shows how continuation ambiguity propagates into an illustrative force-ratio threshold. Its report, 16:9 slides, Korean speaker notes, scan data, held-out checks, tests, and generation scripts are self-contained in that directory.
 
+Both the report and the 16:9 presentation are available in English and Korean. The Korean editions use separately rendered Korean figures, while the original English sources and PDFs remain unchanged.
+
 ## What was improved
 
 - The numerical method is now explicit: the static field is solved as a collocation BVP and the particle orbit is integrated with adaptive Dormand–Prince RK45 (`rtol=1e-9`, `atol=1e-11`, `max_step=0.05`).
