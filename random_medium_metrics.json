@@ -1,0 +1,10 @@
+{
+  "model": "static_1d_autonomous_conservative",
+  "seed": 137,
+  "max_relative_energy_drift": 1.26359088960966e-06,
+  "final_finite_time_lyapunov": 0.005697693166673592,
+  "lyapunov_evaluation_time": 220.0,
+  "positive_crossing_period_mean": 15.820272478863684,
+  "positive_crossing_period_cv": 6.967153695836804e-08,
+  "interpretation": "nonlinear orbit deformation; no evidence of deterministic chaos"
+}

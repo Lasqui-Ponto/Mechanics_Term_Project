@@ -1,0 +1,8 @@
+threshold,tail_mismatch_points,surface_mismatch_points,center_mismatch_points,both_simple_ansatzes_wrong_points
+0.001,0,0,0,0
+0.003,1,0,3,0
+0.01,2,1,3,0
+0.03,3,0,4,0
+0.1,3,2,3,0
+0.3,4,2,3,0
+1.0,6,8,3,2

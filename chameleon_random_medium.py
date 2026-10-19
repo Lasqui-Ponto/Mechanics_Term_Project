@@ -1,202 +1,182 @@
-import numpy as np
+"""Static random-medium experiment with quantitative chaos diagnostics.
+
+Important: a time-independent one-dimensional Hamiltonian is integrable.  The
+random force distorts the orbit, but a positive asymptotic Lyapunov exponent is
+not expected.  This script checks that statement instead of inferring chaos
+from a complicated-looking phase portrait.
+"""
+
+import json
+from pathlib import Path
+
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from scipy.integrate import solve_bvp, solve_ivp
-from scipy.optimize import fsolve
+import numpy as np
 from scipy.ndimage import gaussian_filter1d
 
-# =====================================================================
-# 1. 무작위 불균일 매질 물리 매개변수 설정 (무차원 단위계)
-# =====================================================================
-N_POWER = 1            # Ratra-Peebles 지수
-BETA = 1.0             # 결합 상수
-M_PL = 1.0             # 플랑크 질량
+from chameleon_numerics import (
+    cumulative_lyapunov,
+    mechanical_energy,
+    particle_rhs,
+    phi_min,
+    solve_particle_rk45,
+    solve_planar_field,
+)
 
-# 공간 도메인 설정
-X_MIN = -10.0
-X_MAX = 10.0
-X_GRID_POINTS = 600
-x_span = np.linspace(X_MIN, X_MAX, X_GRID_POINTS)
 
-# 가우시안 무작위 밀도 분포(Gaussian Disordered Medium) 생성
-np.random.seed(137) # 파인만 상수를 기리는 재현성 시드 고정
-raw_noise = np.random.normal(0.0, 1.2, size=X_GRID_POINTS)
-
-# 미시 노이즈를 물리적으로 타당한 공간 요동(Clumps)으로 변환하기 위해 가우시안 평활화(sigma=18) 적용
-smooth_noise = gaussian_filter1d(raw_noise, sigma=18)
-
-# 밀도 값을 0.01~15.0 사이로 조정 (평균 밀도 약 2.5)
-rho_values = np.clip(2.5 + smooth_noise * 12.0, 0.01, 15.0)
-
-# 보간용 연속 밀도 함수 정의
-def rho_random(x):
-    # 격자상 해와 매칭
-    return np.interp(x, x_span, rho_values)
-
-# =====================================================================
-# 2. 경계 조건용 유효 포텐셜 극솟값 구하기
-# =====================================================================
-def get_phi_min(density):
-    func = lambda phi: -1.0 / (phi**2) + density * np.exp(phi)
-    initial_guess = (1.0 / density) ** (1.0 / (N_POWER + 1.0))
-    phi_sol = fsolve(func, initial_guess)
-    return phi_sol[0]
-
-# 양끝 경계에서의 밀도값에 따른 경계치 도출
-phi_left = get_phi_min(rho_values[0])
-phi_right = get_phi_min(rho_values[-1])
-
-print(f"[무작위 불균일계 경계 조건]")
-print(f" - 좌측 경계 밀도 rho(-10) = {rho_values[0]:.4f} => phi_min = {phi_left:.5f}")
-print(f" - 우측 경계 밀도 rho(10) = {rho_values[-1]:.4f} => phi_min = {phi_right:.5f}")
-
-# =====================================================================
-# 3. scipy.integrate.solve_bvp를 활용한 Chameleon Field BVP 풀이
-# =====================================================================
-# dy/dx = [y[1], -1/y[0]^2 + rho_random(x) * e^y[0]]
-def random_chameleon_ode(x, y):
-    phi = y[0]
-    dphi_dx = y[1]
-    phi_safe = np.clip(phi, 1e-5, None)
-    
-    d2phi_dx2 = -1.0 / (phi_safe**2) + rho_random(x) * np.exp(phi_safe)
-    return np.vstack((dphi_dx, d2phi_dx2))
-
-def boundary_conditions(ya, yb):
-    return np.array([
-        ya[0] - phi_left,
-        yb[0] - phi_right
-    ])
-
-# 초기 추정 프로파일
-y_guess = np.zeros((2, X_GRID_POINTS))
-y_guess[0, :] = np.linspace(phi_left, phi_right, X_GRID_POINTS)
-y_guess[1, :] = (phi_right - phi_left) / (X_MAX - X_MIN)
-
-bvp_result = solve_bvp(random_chameleon_ode, boundary_conditions, x_span, y_guess)
-
-if bvp_result.success:
-    print("[성공] 무작위 매질에서의 카멜레온 장 BVP 수치 솔버가 정상 수렴하였습니다.")
-else:
-    print("[실패] 수치 수렴에 실패하였습니다. 오류:", bvp_result.message)
-
-phi_interpolated = bvp_result.sol
-
-# =====================================================================
-# 4. 제5의 힘 F5(x) 및 카오스 입자 궤적 시뮬레이션
-# =====================================================================
-def get_fifth_force(x):
-    y_val = phi_interpolated(x)
-    dphi_dx = y_val[1]
-    return -BETA * dphi_dx
-
-# 배경 조화 진동 복원력 상수 (k=0.15)
+X_MIN, X_MAX = -15.0, 15.0
 GRAVITY_K = 0.15
+X_START, V_START = -7.0, 2.2
+SEED = 137
+OUTPUT = Path(__file__).with_name("chameleon_random_medium_results.png")
+METRICS_OUTPUT = Path(__file__).with_name("random_medium_metrics.json")
 
-def particle_dynamics(t, u, enable_fifth_force=True):
-    pos_x = u[0]
-    vel_v = u[1]
-    
-    pos_x_clipped = np.clip(pos_x, X_MIN, X_MAX)
-    
-    a_gravity = -GRAVITY_K * pos_x
-    a_fifth = get_fifth_force(pos_x_clipped) if enable_fifth_force else 0.0
-    
-    return [vel_v, a_gravity + a_fifth]
 
-# 입자 초기값 설정 (x = -7.5에서 속도 4.2로 발사)
-X_START = -7.5
-V_START = 4.2
-t_span = (0.0, 45.0)
-t_eval = np.linspace(t_span[0], t_span[1], 1200)
-u_init = [X_START, V_START]
+def build_density(x_grid: np.ndarray):
+    rng = np.random.default_rng(SEED)
+    core_grid = np.linspace(-10.0, 10.0, 700)
+    noise = gaussian_filter1d(rng.normal(0.0, 1.0, core_grid.size), sigma=20)
+    noise /= np.std(noise)
+    density_core = np.clip(2.5 + 1.8 * noise, 0.05, 8.0)
+    density_values = np.interp(x_grid, core_grid, density_core)
 
-# 1) 대조군 (뉴턴 조화 진동자만 작동)
-sol_newton = solve_ivp(
-    fun=lambda t, u: particle_dynamics(t, u, enable_fifth_force=False),
-    t_span=t_span,
-    y0=u_init,
-    t_eval=t_eval,
-    method='RK45'
-)
+    def density(x):
+        return np.interp(x, x_grid, density_values)
 
-# 2) 실험군 (뉴턴 + 무작위 매질 카멜레온 제5의 힘 융합)
-sol_chameleon = solve_ivp(
-    fun=lambda t, u: particle_dynamics(t, u, enable_fifth_force=True),
-    t_span=t_span,
-    y0=u_init,
-    t_eval=t_eval,
-    method='RK45'
-)
+    return density_values, density
 
-print("[성공] 무작위 매질 속 카오스 궤적 입자 동역학 연산을 완료하였습니다.")
 
-# =====================================================================
-# 5. 미려한 4분할 시각화 대시보드 플로팅
-# =====================================================================
-plt.style.use('dark_background')
-fig, axs = plt.subplots(2, 2, figsize=(15, 12), dpi=120)
-fig.suptitle("Dynamical Chaos in Disordered Medium\nChameleon Screening Effect with Random Density Fields", 
-             fontsize=18, fontweight='bold', color='#E0E0E0', y=0.96)
+def positive_crossing_periods(times: np.ndarray, states: np.ndarray) -> np.ndarray:
+    x, v = states
+    indices = np.where((x[:-1] < 0.0) & (x[1:] >= 0.0) & (v[1:] > 0.0))[0]
+    crossings = []
+    for index in indices:
+        fraction = -x[index] / (x[index + 1] - x[index])
+        crossings.append(times[index] + fraction * (times[index + 1] - times[index]))
+    return np.diff(np.asarray(crossings))
 
-# [Plot 1] 무작위 공간 밀도 rho(x) 및 반응하는 카멜레온 장 phi(x)
-color_rho = '#FF7675'
-color_phi = '#55E6C1'
 
-ax1 = axs[0, 0]
-ax1.set_title("1. Disordered Matter Density vs. Chameleon Field", fontsize=12, fontweight='bold', pad=10)
-line1 = ax1.plot(x_span, rho_values, color=color_rho, linewidth=2.0, alpha=0.9, label=r"Random Density $\rho_R(x)$")
-ax1.set_xlabel("Spatial Coordinate $x$", color='#CCCCCC')
-ax1.set_ylabel(r"Disordered Density $\rho$", color=color_rho, fontsize=11)
-ax1.tick_params(axis='y', labelcolor=color_rho)
-ax1.grid(True, alpha=0.12, linestyle='--')
+def main() -> None:
+    x_grid = np.linspace(X_MIN, X_MAX, 1100)
+    density_values, density = build_density(x_grid)
+    field = solve_planar_field(
+        x_grid,
+        density,
+        phi_min(float(density_values[0])),
+        phi_min(float(density_values[-1])),
+        tol=2.0e-6,
+    )
+    rhs = particle_rhs(field, gravity_k=GRAVITY_K)
 
-ax1_twin = ax1.twinx()
-phi_eval = phi_interpolated(x_span)[0]
-line2 = ax1_twin.plot(x_span, phi_eval, color=color_phi, linewidth=2.5, label=r"Chameleon Field $\phi(x)$")
-ax1_twin.set_ylabel(r"Chameleon Field $\phi$", color=color_phi, fontsize=11)
-ax1_twin.tick_params(axis='y', labelcolor=color_phi)
+    times = np.linspace(0.0, 220.0, 9000)
+    orbit = solve_particle_rk45(rhs, (times[0], times[-1]), (X_START, V_START), t_eval=times)
+    if np.max(np.abs(orbit.y[0])) >= 0.98 * X_MAX:
+        raise RuntimeError("particle approached the BVP boundary")
 
-lines = line1 + line2
-labels = [l.get_label() for l in lines]
-ax1.legend(lines, labels, loc='upper center', framealpha=0.8, edgecolor='#444444')
+    energy = mechanical_energy(orbit.y, field, gravity_k=GRAVITY_K)
+    relative_energy = (energy - energy[0]) / energy[0]
+    max_energy_drift = float(np.max(np.abs(relative_energy)))
+    periods = positive_crossing_periods(orbit.t, orbit.y)
+    period_cv = float(np.std(periods) / np.mean(periods)) if periods.size >= 2 else float("nan")
 
-# [Plot 2] 무작위 요동 매질이 만드는 제5의 힘 F5(x) 장벽들
-ax2 = axs[0, 1]
-ax2.set_title("2. Disordered Barrier of the Fifth Force $F_5(x)$", fontsize=12, fontweight='bold', pad=10)
-f5_vals = [get_fifth_force(xi) for xi in x_span]
-ax2.plot(x_span, f5_vals, color='#D284FF', linewidth=2.2, label=r"Disordered Force $F_5(x) \propto -\nabla\phi$")
-ax2.axhline(0.0, color='#666666', linestyle=':', alpha=0.5)
-ax2.set_xlabel("Spatial Coordinate $x$", color='#CCCCCC')
-ax2.set_ylabel("Force Magnitude $F_5$", color='#E0E0E0', fontsize=11)
-ax2.grid(True, alpha=0.12, linestyle='--')
-ax2.legend(loc='upper right', framealpha=0.8, edgecolor='#444444')
+    def acceleration(position: float) -> float:
+        return -GRAVITY_K * position - float(field.sol(position)[1])
 
-# [Plot 3] 시간 경과에 따른 입자 궤적 x(t) 대조 (산란 및 카오스적 섭동)
-ax3 = axs[1, 0]
-ax3.set_title("3. Test Particle Position Over Time $x(t)$", fontsize=12, fontweight='bold', pad=10)
-ax3.plot(sol_newton.t, sol_newton.y[0], color='#54A0FF', linewidth=1.8, linestyle='--', label="Newton Harmonic Orbit")
-ax3.plot(sol_chameleon.t, sol_chameleon.y[0], color='#FF7675', linewidth=2.2, label="Chameleon Random Medium Orbit")
-ax3.axhline(0.0, color='#666666', linestyle=':', alpha=0.5)
-ax3.set_xlabel("Time $t$", color='#CCCCCC')
-ax3.set_ylabel("Particle Position $x$", color='#E0E0E0', fontsize=11)
-ax3.grid(True, alpha=0.12, linestyle='--')
-ax3.legend(loc='lower right', framealpha=0.8, edgecolor='#444444')
+    def acceleration_derivative(position: float) -> float:
+        return -GRAVITY_K - float(field.sol(position, 1)[1])
 
-# [Plot 4] 위상 공간 (Phase Space, x-v) 상의 일그러진 카오스적 궤도
-ax4 = axs[1, 1]
-ax4.set_title("4. Orbit Deformation and Chaos in Phase Space ($x - v$)", fontsize=12, fontweight='bold', pad=10)
-ax4.plot(sol_newton.y[0], sol_newton.y[1], color='#54A0FF', linewidth=1.8, linestyle='--', label="Newton Harmonic (Stable)")
-ax4.plot(sol_chameleon.y[0], sol_chameleon.y[1], color='#F1C40F', linewidth=2.2, label="Chameleon Perturbed (Chaotic)")
-ax4.scatter(X_START, V_START, color='#FF5252', s=80, zorder=5, label="Launch State ($x_0, v_0$)")
-ax4.set_xlabel("Position $x$", color='#CCCCCC')
-ax4.set_ylabel("Velocity $v$", color='#E0E0E0', fontsize=11)
-ax4.grid(True, alpha=0.12, linestyle='--')
-ax4.legend(loc='upper right', framealpha=0.8, edgecolor='#444444')
+    lyapunov_t, lyapunov = cumulative_lyapunov(
+        acceleration,
+        acceleration_derivative,
+        (X_START, V_START),
+        t_stop=220.0,
+        renormalize_interval=0.5,
+    )
+    final_ftle = float(lyapunov[-1])
 
-# 레이아웃 정리 및 저장
-plt.tight_layout(rect=[0, 0.03, 1, 0.93])
-save_path = "c:/Users/k0104/Downloads/역학_Term_Project/chameleon_random_medium_results.png"
-plt.savefig(save_path, bbox_inches='tight')
-plt.close()
+    plot_grid = np.linspace(-12.0, 12.0, 850)
+    phi_values, gradients = field.sol(plot_grid)
+    fifth_force = -gradients
 
-print(f"[성공] 무작위 매질 시뮬레이션 결과 대시보드 이미지가 다음 경로에 저장되었습니다:\n -> {save_path}")
+    plt.style.use("dark_background")
+    fig, axes = plt.subplots(2, 2, figsize=(15, 11), dpi=140)
+    fig.suptitle(
+        "Static Disordered Medium: nonlinear orbit deformation, not chaos\n"
+        "Energy conservation and finite-time Lyapunov diagnostic",
+        fontsize=17,
+        fontweight="bold",
+        y=0.98,
+    )
+
+    ax = axes[0, 0]
+    density_line = ax.plot(plot_grid, density(plot_grid), color="#ff7675", lw=1.8, label=r"Density $\hat\rho_R$")
+    ax.set(xlabel=r"Position $\hat x$", ylabel=r"Density $\hat\rho_R$", title="(a) Reproducible random density (seed 137)")
+    ax.tick_params(axis="y", labelcolor="#ff7675")
+    twin = ax.twinx()
+    field_line = twin.plot(plot_grid, phi_values, color="#55efc4", lw=2.2, label=r"Field $\hat\phi$")
+    twin.set_ylabel(r"Field $\hat\phi$", color="#55efc4")
+    twin.tick_params(axis="y", labelcolor="#55efc4")
+    lines = density_line + field_line
+    ax.legend(lines, [line.get_label() for line in lines], loc="upper center")
+    ax.grid(alpha=0.16, ls="--")
+
+    ax = axes[0, 1]
+    ax.plot(plot_grid, fifth_force, color="#d6a2e8", lw=2.0)
+    ax.axhline(0.0, color="white", lw=0.8, alpha=0.35)
+    ax.set(xlabel=r"Position $\hat x$", ylabel=r"Acceleration $\hat a_5$", title="(b) Static fifth-force landscape")
+    ax.grid(alpha=0.16, ls="--")
+
+    ax = axes[1, 0]
+    ax.plot(orbit.y[0], orbit.y[1], color="#fdcb6e", lw=1.3)
+    ax.scatter([X_START], [V_START], color="#ff5252", s=50, zorder=4)
+    ax.set(xlabel=r"Position $\hat x$", ylabel=r"Velocity $\hat v$", title="(c) One closed energy contour in phase space")
+    ax.text(
+        0.03,
+        0.04,
+        "A 1D autonomous conservative system\nhas no deterministic chaos.",
+        transform=ax.transAxes,
+        fontsize=10,
+        bbox={"boxstyle": "round", "facecolor": "#17202a", "alpha": 0.85},
+    )
+    ax.grid(alpha=0.16, ls="--")
+
+    ax = axes[1, 1]
+    ax.semilogy(orbit.t, np.maximum(np.abs(relative_energy), 1.0e-16), color="#74b9ff", lw=1.5, label=r"$|\Delta E/E_0|$")
+    ax.set(xlabel=r"Time $\hat t$", ylabel="Relative energy error", title="(d) Quantitative diagnostics")
+    ax.grid(alpha=0.16, ls="--")
+    twin = ax.twinx()
+    twin.plot(lyapunov_t, lyapunov, color="#ff7675", lw=1.8, label=r"Cumulative $\lambda_{FT}$")
+    twin.axhline(0.0, color="#ff7675", ls=":", alpha=0.5)
+    twin.set_ylabel(r"Finite-time exponent $\lambda_{FT}$", color="#ff7675")
+    twin.tick_params(axis="y", labelcolor="#ff7675")
+    ax.text(
+        0.03,
+        0.80,
+        f"max |ΔE/E₀| = {max_energy_drift:.1e}\nλFT(t={lyapunov_t[-1]:.0f}) = {final_ftle:.2e}\nperiod CV = {period_cv:.1e}",
+        transform=ax.transAxes,
+        fontsize=9,
+        bbox={"boxstyle": "round", "facecolor": "#17202a", "alpha": 0.85},
+    )
+
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    fig.savefig(OUTPUT, bbox_inches="tight")
+    plt.close(fig)
+
+    metrics = {
+        "model": "static_1d_autonomous_conservative",
+        "seed": SEED,
+        "max_relative_energy_drift": max_energy_drift,
+        "final_finite_time_lyapunov": final_ftle,
+        "lyapunov_evaluation_time": float(lyapunov_t[-1]),
+        "positive_crossing_period_mean": float(np.mean(periods)),
+        "positive_crossing_period_cv": period_cv,
+        "interpretation": "nonlinear orbit deformation; no evidence of deterministic chaos",
+    }
+    METRICS_OUTPUT.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+    print(json.dumps(metrics, indent=2))
+    print(f"saved {OUTPUT}")
+
+
+if __name__ == "__main__":
+    main()

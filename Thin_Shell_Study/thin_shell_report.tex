@@ -1,0 +1,375 @@
+\documentclass[11pt,a4paper]{article}
+\input{report_preamble.tex}
+\graphicspath{{figures/}}
+\hypersetup{pdftitle={From Scalar Charge to Local Force: Testing Chameleon Thin-Shell Models},pdfauthor={Dongkyu Lee}}
+\title{\bfseries\Large From Scalar Charge to Local Force\\[4pt]
+\large Accuracy, Distance Dependence, and Threshold Decisions\newline in a Spherical Chameleon Field}
+\author{Dongkyu Lee\\\small Department of Physics and Astronomy, Seoul National University\\
+\small Classical Mechanics Term Project: Independent Revised Study}
+\date{19 October 2026}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+A screened source is often replaced by one effective scalar charge when
+predicting a fifth force. This study tests two separate steps: estimating that
+asymptotic charge and using it to predict the force at a finite distance.
+For $V(\phi)=\Lambda^5/\phi$ in the weak conformal-coupling limit, a two-domain
+collocation solver computes \StudyPoints\ nonlinear spherical boundary-value
+problems with $10^2\leq\rho_c/\rho_\infty\leq10^5$ and
+$10^{-3}\leq m_\infty R\leq0.3$. An active-shell Yukawa integral predicts the
+charge within 10\% at \StudyASWithin\% of this grid. A simpler point-factor
+times finite-volume control reaches the same coverage; its median error is
+\StudyPointMedian\%, versus \StudyASMedian\% for the radial integral.
+The additional radial weighting is therefore not established as the cause of
+the improvement. Even the numerical asymptotic charge underpredicts the local
+force at $1.5R$ by as much as \StudyForceNearMax\%; \StudyForceNearFailures\ grid
+points exceed 10\% error. The maximum errors fall to \StudyForceFiveMax\%
+at $5R$ and \StudyForceTenMax\% at $10R$. At the illustrative force-ratio
+threshold $\alpha_\star=\StudyThreshold$, replacing the tail-based reference
+with the direct nonlinear gradient changes \StudyTailFlips\ decisions.
+A refined-domain audit of \StudyAuditPoints\ selected points preserves the
+direct-force decisions. These are numerical validity and decision-boundary
+results for an idealized model, rather than detector sensitivities or new
+experimental exclusions.
+\end{abstract}
+
+\section{Research question and scope}
+Chameleon screening changes the strength and range of a scalar-mediated force
+through the ambient matter density \cite{KhouryPRL,KhouryPRD}. A dense body can
+have a nearly constant interior field and a small effective scalar charge,
+despite an appreciable microscopic matter coupling. The familiar long-range
+thin-shell estimate provides a useful, inexpensive description of that effect.
+Its use in an observation, however, involves both a source approximation and
+a force-propagation approximation.
+
+The questions here are: (i) how accurately do specified charge models reproduce
+the nonlinear spherical solution, (ii) how much of the improvement comes from
+finite shell volume rather than radial Yukawa weighting, and (iii) how far from
+the source must a probe be before the measured asymptotic charge predicts its
+local force accurately? The last question supplies a direct mechanics
+connection: the acceleration of a small test body is set by the local field
+gradient, not by an asymptotic coefficient alone.
+
+Analytic thin-shell and no-shell matching, including finite interior-mass
+effects, already exists \cite{TamakiTsujikawa}. Real laboratory geometries have
+also been solved numerically \cite{Elder2016,Schlogel2016}. This study makes no
+priority claim for these methods or for Yukawa shell integration. Its limited
+contribution is a reproducible charge-to-local-force error analysis with a
+controlled ablation and an explicit threshold reference. All sources and data
+are available in the
+\href{https://github.com/Lasqui-Ponto/Mechanics_Term_Project/tree/agent/improve-chameleon-project/Thin_Shell_Study}{public study repository}.
+
+\section{Physical model and normalization}
+Use natural units $\hbar=c=1$ and the reduced Planck mass
+$\mpl=(8\pi G)^{-1/2}$. For a positive scalar field take
+\begin{equation}
+ V(\phi)=\frac{\Lambda^5}{\phi},\qquad A(\phi)=e^{\phi/M_c},
+ \qquad M_c=\frac{\mpl}{\beta}.
+\end{equation}
+The static weak-gravity equation is
+\begin{equation}
+ \nabla^2\phi=-\frac{\Lambda^5}{\phi^2}+\frac{\rho}{M_c}e^{\phi/M_c}.
+\end{equation}
+To make the approximation explicit, define $x=r/R$, $u=\phi/\phi_\infty$,
+$\widetilde\rho=\rho/\rho_\infty$, and $D=\phi_\infty/M_c$. The full
+dimensionless equation has coefficients
+\begin{equation}
+ u''+\frac2x u'=-\frac{A_0}{u^2}+B_0\widetilde\rho e^{Du},
+ \quad A_0=\frac{\Lambda^5R^2}{\phi_\infty^3},\quad
+ B_0=\frac{\rho_\infty R^2}{M_c\phi_\infty}.
+\end{equation}
+At the exact ambient minimum $A_0=B_0e^D$ and
+$(m_\infty R)^2=A_0(2+D)$. The present experiment deliberately takes
+$D\to0$; it does not silently discard an independent coupling parameter.
+In that limit
+\begin{equation}
+ \phi_{\min}=\left(\frac{\Lambda^5M_c}{\rho}\right)^{1/2},\qquad
+ m_{\rm eff}^2=\frac{2\Lambda^5}{\phi_{\min}^3},\qquad
+ \lambda_C=m_{\rm eff}^{-1}.
+\end{equation}
+The two inputs are $\delta=\rho_c/\rho_\infty$ and $\mu=m_\infty R$:
+\begin{equation}
+ u''+\frac2x u'=\frac{\mu^2}{2}[\widetilde\rho(x)-u^{-2}],
+ \quad \widetilde\rho=\begin{cases}\delta,&x<1,\\1,&x>1,\end{cases}
+ \quad u'(0)=0,\quad u(\infty)=1.
+ \label{eq:bvp}
+\end{equation}
+Consequently $u_c=\delta^{-1/2}$ and $m_cR=\mu\delta^{3/4}$.
+
+\subsection{A parameter is not a measured geometric thickness}
+The normalization uses the total body mass
+$M_s=4\pi\rho_cR^3/3$ and $\Phi_N=GM_s/R$. Define
+\begin{equation}
+ \eps\equiv\frac{\phi_\infty-\phi_c}{6\beta\mpl\Phi_N}
+ =\frac{2(1-\delta^{-1/2})}{\mu^2\delta}.
+ \label{eq:eps}
+\end{equation}
+This is the potential-defined thin-shell parameter, not an exact geometric
+thickness. In the relevant large-interior-mass asymptotics,
+$\eps\simeq\Delta R/R+1/(m_cR)$; identifying it with $\Delta R/R$ requires
+the latter correction to be negligible \cite{TamakiTsujikawa}.
+For example, at $(\delta,\mu)=(10^5,0.1)$ the parameter is $1.99\times10^{-3}$
+while $1/(m_cR)=1.78\times10^{-3}$. We do not label an assumed shell radius
+as a thickness measured from the BVP.
+
+\section{Charge models and the ablation control}
+All charge predictions below use the same surface-referenced tail convention.
+The clipped leading long-range law is
+\begin{equation}
+ \qlr=\min(3\eps,1),\qquad \mu\ll1.
+\end{equation}
+Clipping at one is already an interpolation through the transition, rather
+than a controlled expansion there. Two finite-range amplitude hypotheses are
+\begin{equation}
+ \qsurf=\qlr,\qquad \qctr=e^{-\mu}\qlr.
+\end{equation}
+These are different approximations to the same coefficient. They are not a
+physical ambiguity in the theory. For a fixed solution, changing from
+$e^{-\mu(x-1)}/x$ to $e^{-\mu x}/x$ simply changes the coefficient by
+$Q^{\rm center\ reference}=e^\mu Q^{\rm surface\ reference}$ and leaves
+the field and force invariant. Nor does ``surface amplitude'' mean the exact
+field of a material spherical shell. Finite-mass matching supplies more detailed
+approximations than these two simple hypotheses \cite{TamakiTsujikawa}.
+
+A massless matching model with a frozen core gives the assumed radius fraction
+$q=\sqrt{\max(1-2\eps,0)}$ and finite active volume
+\begin{equation}
+ \qms=1-q^3.
+\end{equation}
+This construction is an approximation; the finite-$\mu$ core is not rematched
+self-consistently. To isolate the extra radial weighting, compare
+\begin{align}
+ \qpv&=e^{-\mu}(1-q^3),\\
+ \qas&=\frac{3e^{-\mu}}{\mu^3}[g(\mu)-g(\mu q)],
+ \qquad g(z)=z\cosh z-\sinh z.
+ \label{eq:ablation}
+\end{align}
+Both have the same assumed active volume and point Yukawa factor; only
+$\qas$ includes the additional spherical radial weight. In the fully active
+limit the exact linear uniform-sphere result also contains the background
+subtraction $1-\delta^{-1}$:
+\begin{equation}
+ Q_{\rm lin}=(1-\delta^{-1})\frac{3e^{-\mu}}{\mu^3}g(\mu).
+\end{equation}
+The shell models omit this small background term on the high-contrast grid.
+It is retained in the weak-source verification.
+
+\section{Asymptotic charge and local acceleration}
+In the linear exterior region define the numerical charge by
+\begin{equation}
+ u=1-s\qnum\frac{e^{-\mu(x-1)}}x,\qquad s=\frac{\mu^2\delta}{6}.
+\end{equation}
+Two estimators, used only in a suitable tail interval, are
+\begin{equation}
+ Q_A=\frac{x(1-u)e^{\mu(x-1)}}s,\qquad
+ Q_\nabla=\frac{x^2u'e^{\mu(x-1)}}{s(1+\mu x)}.
+\end{equation}
+The reported $\qnum$ is the median of $Q_A$ where the nonlinear exterior source
+and its linearization differ by less than 2\%. Agreement with $Q_\nabla$
+checks tail extraction; it does not establish linearity near the source.
+
+For a small, non-backreacting probe with a supplied response factor $Q_t$, the
+nonlinear reference and the Yukawa-tail prediction are respectively
+\begin{align}
+ \ad(x)&=\left|\frac{a_5}{a_N}\right|_{\rm direct}
+      =\frac{2\beta^2Q_t}{s}x^2u'_{\rm num}(x),\label{eq:direct}\\
+ \at(Q,x)&=2\beta^2Q_tQ(1+\mu x)e^{-\mu(x-1)}.
+ \label{eq:tail}
+\end{align}
+Here $a_N=GM_s/(R^2x^2)$ is the body's Newtonian reference, not the acceleration
+of an infinite uniform environment. The main force products use $\beta=Q_t=1$.
+The factor $Q_t$ is not a numerical solution of a two-body screening problem.
+
+There are two distinct multiplicative errors:
+\begin{equation}
+ \frac{\at(Q_j,x)}{\ad(x)}
+ =\frac{Q_j}{\qnum}\,\frac{\at(\qnum,x)}{\ad(x)}.
+ \label{eq:factorization}
+\end{equation}
+Thus charge error and propagation error can reinforce or cancel each other.
+A charge-accuracy ranking need not be a local-force-accuracy ranking.
+
+\section{Numerical method and verification}
+The density jump at $x=1$ is preserved with separate inner and outer
+collocation domains mapped to a shared coordinate. The solver matches both
+$u$ and $u'$ at the surface. At the finite outer boundary it imposes the
+asymptotic Robin condition
+$u'(x_{\max})=(\mu+1/x_{\max})[1-u(x_{\max})]$.
+The charge-scaled variables $x(u-1)=sv$, or $u=\exp(sv/x)$ when positivity
+is helpful, improve conditioning. Both represent the same nonlinear equation;
+they are not thin-shell inputs to the BVP.
+The Robin condition is asymptotic: in the logarithmic representation it is
+imposed on $x\log u/s$ to the same linear-tail order. The domain audit checks
+the effect of the remaining nonlinear boundary terms.
+
+SciPy's fourth-order collocation algorithm solves a $25\times29$ logarithmic
+grid over the ranges in the abstract, nominally at $x_{\max}=160$ with
+tolerance $2\times10^{-4}$. Every point converges. The solution is sampled
+directly at \StudyRadiusSamples\ probe radii in $1.02\leq x\leq20$, including
+$1.05,1.5,2,3,5,10$. The weak-source uniform-sphere benchmark has maximum
+relative charge error $\StudyWeakError$.
+
+\begin{figure}[H]\centering
+ \includegraphics[width=\textwidth]{verification.png}
+ \caption{Analytic-limit, resolution, and tail-estimator checks. Agreement of
+ the two tail estimators is a diagnostic within one BVP solution, not a second
+ independent field solver.}
+\end{figure}
+
+The refined audit selects corners, representative points, points near the
+charge-model 10\% boundaries, the tail/direct threshold flips, and the largest
+local-force error. At \StudyAuditPoints\ points it compares $160R$ and $240R$
+with tightened tolerances. The largest charge change is \StudyAuditChargeMax\%.
+Across the sampled probe radii the largest local-force difference between the
+scan and refined solution is \StudyAuditForceMax\%; the direct threshold
+classification changes at \StudyAuditForceFlips\ audited points. This supports
+the reported contrasts but is not a convergence certificate for every grid
+point or a continuous parameter-space bound.
+
+\section{Results}
+\subsection{Charge accuracy and what the ablation establishes}
+\begin{figure}[H]\centering
+ \includegraphics[width=.94\textwidth]{profiles_and_charge_extraction.png}
+ \caption{Representative unscreened, transitional, and strongly screened
+ solutions. The charge plateau is extracted from the exterior solution.}
+\end{figure}
+\begin{figure}[H]\centering
+ \includegraphics[width=\textwidth]{accuracy_atlas.png}
+ \caption{Signed charge errors against the numerical asymptotic charge.
+ Black contours mark 10\% error. The first two panels compare finite-range
+ amplitude hypotheses in one common normalization.}
+\end{figure}
+\begin{table}[H]\centering\small
+ \caption{Charge errors on the logarithmic grid. Coverage counts are not probabilities.}
+ \begin{tabular}{lrrr}\toprule
+ Model & Median error & Maximum & Within 10\%\\\midrule
+ \StudyChargeRowsEN
+ \bottomrule\end{tabular}
+ \label{tab:charge}
+\end{table}
+The simpler $\qpv$ and the radial integral both reach \StudyASWithin\%
+coverage. The former has the smaller median and maximum errors, whereas the
+integral has a slightly smaller 90th-percentile error (recorded in the data).
+The extra radial weight changes $\qpv$ by at most \StudyRadialMax\% on this grid.
+The evidence supports an effective combined finite-volume/Yukawa correction;
+it does not identify radial weighting as necessary for the observed improvement.
+
+\begin{figure}[H]\centering
+ \includegraphics[width=\textwidth]{charge_comparison.png}
+ \caption{Ablation control added to the charge comparison. Dashed gray is the
+ point-factor plus finite-volume model; shaded bands run from median to
+ 90th-percentile error within bins of $\eps$.}
+\end{figure}
+
+The empirical long-range charge filter $\eps<0.1$, $m_cR>10$, $\mu<0.035$
+passes \StudyGatePoints\ grid points (\StudyGateCoverage\% coverage) and
+\StudyGateHeldout\ held-out log-midpoints at 10\% accuracy. It is a narrow
+empirical check, not a universal sufficient condition. On this high-contrast
+grid, $\eps(m_cR)^2=2(\sqrt\delta-1)$ makes $m_cR>10$ redundant once
+$\eps<0.1$ holds; the scan cannot independently establish the role of that cut.
+
+\subsection{Distance-dependent validity of the tail force}
+\begin{figure}[H]\centering
+ \includegraphics[width=\textwidth]{force_validity_map.png}
+ \caption{(a) Force error at $1.5R$ using the numerical charge itself.
+ (b) First sampled radius satisfying 10\% error at every later sampled radius
+ through $20R$. (c) Error statistics versus radius. The sampled boundary is not
+ a proof of continuous validity between samples or beyond $20R$.}
+ \label{fig:distance}
+\end{figure}
+\begin{table}[H]\centering\small
+ \caption{Numerical-charge tail force versus the direct nonlinear gradient.}
+ \begin{tabular}{rrrr}\toprule
+ $r/R$ & Median error & Maximum error & Points above 10\%\\\midrule
+ \StudyDistanceRows
+ \bottomrule\end{tabular}
+\end{table}
+Even exact knowledge of the asymptotic charge does not remove the near-source
+propagation error. At $1.5R$, \StudyForceNearFailures\ points exceed 10\% and
+the largest error is \StudyForceNearMax\%. On the sampled radial grid all points
+have reached the 10\% target by $r/R=\StudyValidityRadiusMax$, with all later
+samples also passing. The fixed $5R$ and $10R$ slices are stronger empirical
+checks at the corresponding sampled radii, with maximum errors of
+\StudyForceFiveMax\% and \StudyForceTenMax\%.
+
+\begin{table}[H]\centering\small
+ \caption{The same charge models used to predict the local force at $1.5R$.}
+ \begin{tabular}{lrrr}\toprule
+ Model & Median error & Maximum & Within 10\%\\\midrule
+ \StudyLocalForceRowsEN
+ \bottomrule\end{tabular}
+\end{table}
+For example, $\qas$ gives \StudyASWithin\% charge coverage but
+\StudyASLocalWithin\% local-force coverage at this radius, with maximum local
+error \StudyASLocalMax\%. This change follows the error factorization in
+\cref{eq:factorization}; a favorable charge benchmark alone is insufficient.
+
+\subsection{Threshold decisions use the direct force}
+The map now uses \cref{eq:direct} at $1.5R$ as its numerical reference and
+$\alpha_\star=\StudyThreshold$ as an illustrative threshold. The tail computed
+from $\qnum$ disagrees with that reference at \StudyTailFlips\ points. The
+surface-amplitude and center-point hypotheses disagree with the direct result
+at \StudySurfaceFlips\ and \StudyCenterFlips\ points, respectively. Their median
+contour shifts are $\StudySurfaceShift$ and $\StudyCenterShift$ dex; these are
+log-grid interpolations, not resolved continuous boundaries. Their mutual
+decision disagreement is \StudyAnsatzDisagreement\ points and both are wrong
+at \StudyBothWrong\ points for this threshold.
+
+\begin{figure}[H]\centering
+ \includegraphics[width=\textwidth]{detectability_map.png}
+ \caption{Local force-ratio threshold map. White is the direct-gradient contour;
+ the numerical-charge tail and two simple amplitude predictions are shown
+ separately. The third panel normalizes their bias by the selected threshold.}
+\end{figure}
+The separate sensitivity table spans $\alpha_\star=0.001,0.003,0.01,0.03,0.1,0.3,1$.
+All-above and all-below cases are legitimate outputs: if no contour crosses the
+grid, contour displacement is recorded as null rather than causing a reduction
+of an empty array. No claim about arbitrary thresholds follows from one map.
+
+\section{Interpretation, limitations, and reproduction}
+The supported research result is a distinction between charge error and
+finite-distance acceleration error, with a directly tested distance dependence.
+The ablation also shows that the more elaborate radial integral is not required
+to obtain its charge coverage on this restricted grid. Whether that changes
+for $\mu\gtrsim1$, other potentials, or different source shapes remains open;
+such extensions require new numerical checks and a broader comparison with
+existing matched solutions.
+
+The model is static, spherical, homogeneous in each region, nonrelativistic,
+$n=1$, and conditional on $D\to0$. A real experiment additionally needs the
+source's dimensional scale, chamber walls, finite test-body response, source
+modulation, detector noise and systematic errors. Existing atom and levitated
+force searches illustrate the importance of those ingredients
+\cite{Hamilton2015,Sabulsky2019,Yin2022}. This isolated-sphere map supplies no
+new physical $(\Lambda,M_c)$ exclusion and does not reassess those experiments.
+For an actual forecast the relevant quantity is a predicted differential
+signal divided by its uncertainty, not an arbitrary force-ratio cut.
+
+From the repository root, run:
+\begin{verbatim}
+python -m Thin_Shell_Study.run_study --workers 4 --force
+python -m unittest discover -v
+\end{verbatim}
+The first command generates both languages' figures, scan and local-force CSVs,
+distance and threshold-sensitivity tables, refined audits, JSON metrics, and
+the numeric TeX inputs used by both reports and decks. Cached data carry a
+schema and numerical-model/settings fingerprint; a charge-only or stale cache
+is recomputed. The JSON records the package versions, source fingerprint, and
+Git revision at the run. The Korean-only rendering command reads the same
+metrics and threshold, with no independent numerical defaults.
+
+\section{Conclusion}
+The numerical charge benchmark remains reproducible, but it is not by itself
+a force benchmark near the source. The point-factor/finite-volume control
+matches the active-shell integral's charge coverage, limiting the causal claim
+for radial weighting. The direct-gradient comparison exposes a
+\StudyForceNearMax\% worst tail-force error at $1.5R$, decreasing to
+\StudyForceFiveMax\% at $5R$ and \StudyForceTenMax\% at $10R$ on this grid.
+Using that local force changes \StudyTailFlips\ decisions at the selected
+threshold. These results provide a concrete way to control the approximation
+used between a screened source and a classical-mechanics observable.
+
+\clearpage
+\input{study_references.tex}
+\end{document}

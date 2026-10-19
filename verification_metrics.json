@@ -1,0 +1,29 @@
+{
+  "rk45_tolerances": [
+    1e-05,
+    1e-07,
+    1e-09
+  ],
+  "rk45_max_state_errors": [
+    5.975775756970204e-05,
+    5.380077147864944e-07,
+    4.979667799699076e-09
+  ],
+  "rk4_steps": [
+    0.4,
+    0.2,
+    0.1,
+    0.05
+  ],
+  "rk4_max_state_errors": [
+    0.0001755861770896118,
+    1.0925151517662272e-05,
+    6.812210251879245e-07,
+    4.2525339454273984e-08
+  ],
+  "rk4_observed_order": 4.00380932195531,
+  "uniform_density_bvp_max_phi_error": 5.551115123125783e-17,
+  "uniform_density_bvp_max_gradient_error": 1.9528951040125854e-16,
+  "full_model_rk4_rk45_max_state_difference": 4.965055498190616e-11,
+  "full_model_max_relative_energy_drift": 1.0939776199897402e-11
+}
