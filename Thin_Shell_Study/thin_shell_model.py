@@ -93,7 +93,12 @@ class ThinShellPoint:
 
     @property
     def epsilon(self) -> float:
-        """Standard thin-shell thickness parameter Delta R/R."""
+        """Potential-defined thin-shell parameter epsilon_th.
+
+        It approximates a geometric shell thickness only in an additional
+        asymptotic regime.  Finite interior-mass corrections need not be small
+        merely because m_in R exceeds one.
+        """
 
         return (1.0 - self.phi_core_ratio) / (
             self.b_coefficient * self.density_contrast
@@ -179,6 +184,25 @@ class ChargeSolution:
         )
         return amplitude, gradient
 
+    def direct_force_ratio(
+        self, x: Array | float | None = None, *, q_probe: Array | float = 1.0
+    ) -> Array:
+        """Evaluate |a_5/a_N| from the nonlinear local field gradient.
+
+        The Newtonian reference is the total source mass, as in charge_scale.
+        The probe is small enough not to backreact on the source solution;
+        q_probe is a supplied response factor rather than a two-body solution.
+        No exterior Yukawa linearization is used in this evaluation.
+        """
+
+        radius = np.asarray(self.point.probe_radius if x is None else x, dtype=float)
+        if np.any(~np.isfinite(radius)) or np.any(radius <= 1.0):
+            raise ValueError("force-ratio evaluation requires finite x>1")
+        return (
+            2.0 * self.point.beta**2 * np.asarray(q_probe) * radius**2
+            * self.field_gradient(radius) / self.point.charge_scale
+        )
+
 
 def q_thin_shell(point: ThinShellPoint) -> float:
     """Long-range thin-shell charge, clipped through the transition."""
@@ -187,7 +211,11 @@ def q_thin_shell(point: ThinShellPoint) -> float:
 
 
 def q_center_point_continuation(point: ThinShellPoint) -> float:
-    """Center-point continuation in the surface-referenced tail convention."""
+    """Alternative finite-range ansatz in the same surface-tail convention.
+
+    This changes the predicted amplitude; it is not a reparameterization of
+    q_thin_shell and does not imply an ambiguity in the underlying field theory.
+    """
 
     return float(np.exp(-point.mu_out) * q_thin_shell(point))
 
@@ -197,6 +225,16 @@ def q_matched_shell(point: ThinShellPoint) -> float:
 
     core_fraction = np.sqrt(max(1.0 - 2.0 * point.epsilon, 0.0))
     return float(1.0 - core_fraction**3)
+
+
+def q_point_matched_shell(point: ThinShellPoint) -> float:
+    """Ablation control: finite shell volume times a point Yukawa factor.
+
+    Comparing this with q_yukawa_matched isolates the additional spherical
+    radial weighting while keeping the same assumed core radius.
+    """
+
+    return float(np.exp(-point.mu_out) * q_matched_shell(point))
 
 
 def _g_yukawa(z: Array | float) -> Array:
@@ -231,7 +269,11 @@ def force_ratio(
     *,
     q_probe: Array | float = 1.0,
 ) -> Array:
-    """Return |a_5/a_N| for a probe outside the spherical source."""
+    """Yukawa-tail prediction of |a_5/a_N|, not the nonlinear local force.
+
+    Use ChargeSolution.direct_force_ratio for the numerical reference.  Even an
+    accurately extracted asymptotic charge can mispredict the force near R.
+    """
 
     x_probe = point.probe_radius
     yukawa = (1.0 + point.mu_out * x_probe) * np.exp(

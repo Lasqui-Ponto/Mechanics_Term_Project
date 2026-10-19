@@ -8,11 +8,11 @@ Repository: [github.com/Lasqui-Ponto/Mechanics_Term_Project](https://github.com/
 
 The repository now also contains a separate research package, [`Thin_Shell_Study/`](Thin_Shell_Study/README.md), which leaves the original report and slides unchanged. It asks a narrower quantitative question:
 
-> How accurately does the long-range thin-shell law predict the full nonlinear spherical solution, and how should it be continued when the source has finite Yukawa range?
+> How accurately do thin-shell models predict the asymptotic scalar charge, and at what distance does that charge accurately predict the local fifth force?
 
-The new study solves 725 spherical BVPs at an outer radius of $160R$, extracts a numerical scalar charge from the exterior Yukawa tail, compares surface-shell and center-point continuations, and benchmarks an active-shell radial integral. A 14-point stratified $160R\to240R$ audit checks grid corners and the 10% decision boundary. The study also shows how continuation ambiguity propagates into an illustrative force-ratio threshold. Its report, 16:9 slides, Korean speaker notes, scan data, held-out checks, tests, and generation scripts are self-contained in that directory.
+The study solves 725 spherical BVPs and samples the direct nonlinear force at 71 radii from $1.02R$ to $20R$. It separates charge-model error from the error of propagating an asymptotic Yukawa tail to a nearby probe. A point-factor/finite-volume ablation tests the interpretation of the active-shell integral, and a 16-point refined-domain audit includes the local-force threshold flips. The threshold map uses the direct gradient as its reference. Its report, 16:9 slides, Korean speaker notes, scan data, held-out checks, tests, and generation scripts are self-contained in that directory.
 
-Both the report and the 16:9 presentation are available in English and Korean. The Korean editions use separately rendered Korean figures, while the original English sources and PDFs remain unchanged.
+Both the report and the 16:9 presentation are available in English and Korean. They share generated numeric inputs and one figure renderer, so the data and selected threshold stay synchronized. The original course report and slides outside `Thin_Shell_Study` are preserved.
 
 ## What was improved
 

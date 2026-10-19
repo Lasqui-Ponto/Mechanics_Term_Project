@@ -1,447 +1,235 @@
 \documentclass[10pt,aspectratio=169]{beamer}
-
-\usepackage{amsmath,amssymb,mathtools}
-\usepackage{graphicx}
-\usepackage{booktabs}
-\usepackage{xurl}
-\usepackage{tikz}
-\usepackage{hyperref}
-
+\newcommand{\StudyFooter}{Scalar charge and local-force validity}
+\input{slide_preamble.tex}
 \graphicspath{{figures/}}
-\definecolor{navy}{HTML}{142B44}
-\definecolor{blue}{HTML}{2166AC}
-\definecolor{teal}{HTML}{1B8A8F}
-\definecolor{orange}{HTML}{E67E22}
-\definecolor{red}{HTML}{B2182B}
-\definecolor{cream}{HTML}{F7F4ED}
-\definecolor{lightblue}{HTML}{EAF2F8}
-\definecolor{graytext}{HTML}{4B5563}
-
-\setbeamercolor{normal text}{fg=navy,bg=white}
-\setbeamercolor{structure}{fg=blue}
-\setbeamercolor{frametitle}{fg=white,bg=navy}
-\setbeamercolor{title}{fg=white}
-\setbeamercolor{subtitle}{fg=white!78}
-\setbeamercolor{author}{fg=white}
-\setbeamercolor{institute}{fg=white!82}
-\setbeamercolor{date}{fg=white!75}
-\setbeamercolor{block title}{fg=white,bg=blue}
-\setbeamercolor{block body}{fg=navy,bg=lightblue}
-\setbeamercolor{alerted text}{fg=red}
-\setbeamerfont{frametitle}{series=\bfseries,size=\large}
-\setbeamerfont{title}{series=\bfseries,size=\LARGE}
-\setbeamertemplate{navigation symbols}{}
-\setbeamertemplate{bibliography item}[text]
-\setbeamertemplate{itemize item}{\color{teal}$\blacktriangleright$}
-\setbeamertemplate{itemize subitem}{\color{orange}$\bullet$}
-\setbeamertemplate{footline}{%
-  \leavevmode\hbox{%
-  \begin{beamercolorbox}[wd=.82\paperwidth,ht=2.7ex,dp=1.2ex,leftskip=1.2em]{author in head/foot}%
-  \color{graytext}\scriptsize Thin-shell validity and force-ratio proxies
-  \end{beamercolorbox}%
-  \begin{beamercolorbox}[wd=.18\paperwidth,ht=2.7ex,dp=1.2ex,rightskip=1.2em plus1fil]{author in head/foot}%
-  \color{graytext}\scriptsize\insertframenumber/\inserttotalframenumber
-  \end{beamercolorbox}}}
-\hypersetup{colorlinks=true,urlcolor=orange}
-
-\newcommand{\qnum}{Q_{\mathrm{num}}}
-\newcommand{\qlr}{Q_{\mathrm{LR}}}
-\newcommand{\qsurf}{Q_{\mathrm{surf}}}
-\newcommand{\qctr}{Q_{\mathrm{ctr}}}
-\newcommand{\qms}{Q_{\mathrm{MS}}}
-\newcommand{\qas}{Q_{\mathrm{AS}}}
-
-\title{When Does the Chameleon\\Thin-Shell Approximation Fail?}
-\subtitle{Numerical scalar-charge accuracy and force-ratio threshold maps}
+\title{From Scalar Charge\\to Local Force}
+\subtitle{Testing spherical chameleon thin-shell models}
 \author{Dongkyu Lee}
 \institute{Department of Physics and Astronomy, Seoul National University}
-\date{Classical Mechanics Term Project --- Independent Revised Study, 10 July 2026}
-
+\date{Classical Mechanics Term Project: Revised Study, 19 October 2026}
+\hypersetup{pdftitle={From Scalar Charge to Local Force},pdfauthor={Dongkyu Lee}}
 \begin{document}
 
+\begingroup
+\setbeamercolor{background canvas}{bg=navy}
 \begin{frame}[plain]
- \begin{tikzpicture}[remember picture,overlay]
-  \fill[navy] (current page.south west) rectangle (current page.north east);
-  \fill[teal,opacity=.20] (current page.south west) -- ++(7.0,0) -- ++(-2.0,9.0) -- cycle;
-  \fill[orange,opacity=.18] (current page.north east) -- ++(-5.5,0) -- ++(2.0,-9.0) -- cycle;
- \end{tikzpicture}
- \vspace{0.8cm}
  \titlepage
- \vfill
- \centering\scriptsize\color{white!80}
- \href{https://github.com/Lasqui-Ponto/Mechanics_Term_Project/tree/agent/improve-chameleon-project/Thin_Shell_Study}{Thin\_Shell\_Study on GitHub}
+ \centering\scriptsize
+ \href{https://github.com/Lasqui-Ponto/Mechanics_Term_Project/tree/agent/improve-chameleon-project/Thin_Shell_Study}{\color{white!80}Code, numerical data, tests, and reports}
 \end{frame}
+\endgroup
 
-\begin{frame}{1. The research gap is an error bar, not another screening demo}
+\begin{frame}{1. Charge accuracy and force accuracy are separate questions}
  \begin{columns}[T,onlytextwidth]
-  \begin{column}{0.47\textwidth}
-   \begin{block}{Known shortcut}
-    \[
-      Q_{\rm KW}=\min\!\left(3\frac{\Delta R}{R},1\right)
-    \]
-    One number replaces a nonlinear spherical boundary-value problem.
-   \end{block}
-   \vspace{0.15cm}
-   \begin{itemize}
-    \item fast and physically transparent
-    \item derived for a thin shell and heavy core
-    \item usually quoted without an accuracy estimate
-   \end{itemize}
-  \end{column}
-  \begin{column}{0.49\textwidth}
-   \begin{block}{Question}
-    \centering\large
-    Is the shortcut accurate enough to decide\\
-    \alert{above} versus \alert{below} a force-ratio threshold?
-   \end{block}
-   \vspace{0.18cm}
-   \begin{enumerate}
-    \item Solve the full nonlinear field.
-    \item Measure its scalar charge.
-    \item Map approximation error.
-    \item Propagate error to a proxy decision boundary.
-   \end{enumerate}
-  \end{column}
+ \begin{column}{.48\textwidth}
+  \begin{block}{Asymptotic source description}
+   \[u=1-sQ\frac{e^{-\mu(x-1)}}x\]
+   A single charge summarizes the distant field.
+  \end{block}
+  \begin{itemize}
+   \item Does a thin-shell model predict $Q$?
+   \item Which correction improves that prediction?
+  \end{itemize}
+ \end{column}
+ \begin{column}{.48\textwidth}
+  \begin{block}{Classical-mechanics observable}
+   \[a_5=-\frac{\beta}{M_{\rm Pl}}\nabla\phi\]
+   A nearby probe responds to the local gradient.
+  \end{block}
+  \begin{itemize}
+   \item How far away is the tail formula accurate?
+   \item Does the approximation change a threshold decision?
+  \end{itemize}
+ \end{column}
  \end{columns}
- \vfill
- \centering\color{graytext}\small
- Niche: an \textbf{accuracy-to-observability bridge}, not the first thin-shell calculation.
+ \vfill\centering\small
+ The numerical force reference is the \textbf{direct nonlinear gradient}.
 \end{frame}
 
-\begin{frame}{2. A uniform sphere leaves two independent control parameters}
+\begin{frame}{2. Spherical model and the thin-shell parameter}
  \begin{columns}[T,onlytextwidth]
-  \begin{column}{0.54\textwidth}
-   \small
-   \[
-    V(\phi)=\frac{\Lambda^5}{\phi},\qquad
-    \nabla^2\phi=-\frac{\Lambda^5}{\phi^2}+\frac{\rho}{M_c}
-   \]
-   \[
-    x=\frac rR,\quad u=\frac{\phi}{\phi_\infty},\quad
-    \delta=\frac{\rho_c}{\rho_\infty},\quad \mu=m_\infty R
-   \]
-   \begin{block}{Full nonlinear BVP ($n=1$, weak-coupling limit)}
-    \[
-     u''+\frac{2}{x}u'=\frac{\mu^2}{2}
-     \left[\widetilde\rho(x)-u^{-2}\right]
-    \]
-    \[
-     u'(0)=0,\qquad u(\infty)=1
-    \]
-   \end{block}
-  \end{column}
-  \begin{column}{0.42\textwidth}
-   \vspace{0.15cm}
-   \begin{block}{Diagnostics, not extra inputs}
-    \[
-     \epsilon=\frac{2(1-\delta^{-1/2})}
-     {\mu^2\delta}
-    \]
-    \[
-     m_cR=\mu\delta^{3/4}
-    \]
-   \end{block}
-   \begin{itemize}
-    \item $\epsilon\ll1$: geometrically thin shell
-    \item $m_cR\gg1$: core can reach its minimum
-    \item $\mu\ll1$: source small compared with exterior range
-   \end{itemize}
-  \end{column}
+ \begin{column}{.53\textwidth}
+  \[V=\frac{\Lambda^5}{\phi},\quad x=\frac rR,\quad u=\frac\phi{\phi_\infty}\]
+  \begin{block}{$n=1$, weak conformal-coupling limit}
+   \[u''+\frac2x u'=\frac{\mu^2}{2}(\widetilde\rho-u^{-2})\]
+   \[u'(0)=0,\qquad u(\infty)=1\]
+  \end{block}
+  \[\delta=\frac{\rho_c}{\rho_\infty},\quad \mu=m_\infty R,\quad m_cR=\mu\delta^{3/4}\]
+ \end{column}
+ \begin{column}{.43\textwidth}
+  \[\eps=\frac{2(1-\delta^{-1/2})}{\mu^2\delta}\]
+  \small This potential-defined parameter is not an exact geometric thickness.
+  \begin{block}{Finite interior-mass correction}
+   \[\eps\simeq\frac{\Delta R}{R}+\frac1{m_cR}\]
+   \scriptsize Relevant large-mass asymptotics: Tamaki--Tsujikawa (2008), Eq. (48).
+  \end{block}
+ \end{column}
  \end{columns}
- \vfill
- \scriptsize\color{graytext}
- The full exponential normalization also contains $D=\phi_\infty/M_c$; the main scan explicitly takes the same $D\to0$ limit used by the standard formula.
+ \vfill\scriptsize\color{graytext}
+ The full exponential coupling has $D=\phi_\infty/M_c$; the scan explicitly takes $D\to0$.
 \end{frame}
 
-\begin{frame}{3. The long-range law does not fix a finite-range source location}
+\begin{frame}{3. Finite-range models and a matched ablation control}
  \small
+ \[\qlr=\min(3\eps,1),\qquad \qsurf=\qlr,\quad \qctr=e^{-\mu}\qlr\]
+ \[q=\sqrt{\max(1-2\eps,0)},\qquad \qms=1-q^3\]
  \begin{columns}[T,onlytextwidth]
-  \begin{column}{0.31\textwidth}
-   \begin{block}{Long-range law}
-    \[
-      \qlr=\min(3\epsilon,1),\quad \mu\ll1
-    \]
-    Linear shell mass plus a heuristic cap.
-   \end{block}
-  \end{column}
-  \begin{column}{0.31\textwidth}
-   \begin{block}{Two naive continuations}
-    \[
-      \qsurf=\qlr
-    \]
-    \[
-      \qctr=e^{-\mu}\qlr
-    \]
-    Put effective charge at the surface or center.
-   \end{block}
-  \end{column}
-  \begin{column}{0.34\textwidth}
-   \begin{block}{Active-shell integral}
-    \[
-     g(z)=z\cosh z-\sinh z
-    \]
-    \[
-     \qas=\frac{3e^{-\mu}}{\mu^3}
-     [g(\mu)-g(\mu q)]
-    \]
-    Yukawa-weights the active radial shell.
-   \end{block}
-  \end{column}
+ \begin{column}{.46\textwidth}
+  \begin{block}{Point factor + finite volume}
+   \[\qpv=e^{-\mu}(1-q^3)\]
+   Same assumed core and active volume.
+  \end{block}
+ \end{column}
+ \begin{column}{.50\textwidth}
+  \begin{block}{Additional spherical radial weight}
+   \[\qas=\frac{3e^{-\mu}}{\mu^3}[g(\mu)-g(\mu q)]\]
+   \[g(z)=z\cosh z-\sinh z\]
+  \end{block}
+ \end{column}
  \end{columns}
- \vspace{0.3cm}
- \begin{block}{Convention warning}
-  \centering
-  Surface-referenced $Q$ carries $e^{-\mu}$; the center-referenced uniform-sphere
-  form factor $3[\mu\cosh\mu-\sinh\mu]/\mu^3$ is greater than one.
- \end{block}
- \centering\color{graytext}
- $\qas$ is constructed and benchmarked here, not claimed as a literature-priority formula.
+ \vfill\scriptsize
+ All coefficients use one surface-tail convention. Changing reference alone does not change physics;
+ the first two formulas are different amplitude hypotheses. The core radius is modeled, not measured.
 \end{frame}
 
-\begin{frame}{4. Measuring numerical charge from the exterior tail}
+\begin{frame}{4. Nonlinear BVP and the direct force reference}
  \begin{columns}[T,onlytextwidth]
-  \begin{column}{0.50\textwidth}
-   \begin{block}{Charge definition}
-    \[
-     u=1-s\qnum\frac{e^{-\mu(x-1)}}{x},
-     \qquad s=\frac{\mu^2\delta}{6}
-    \]
-   \end{block}
-   \begin{align*}
-    Q_A(x)&=\frac{x(1-u)e^{\mu(x-1)}}{s},\\
-    Q_\nabla(x)&=\frac{x^2u'e^{\mu(x-1)}}{s(1+\mu x)}.
-   \end{align*}
-   Agreement of two estimators is a built-in diagnostic.
-  \end{column}
-  \begin{column}{0.46\textwidth}
-   \begin{itemize}
-    \item exact sharp density boundary: two collocation domains
-    \item regular center and Yukawa Robin outer boundary
-    \item charge-scaled variable $x(u-1)=sv$
-    \item positive log-field representation in difficult transition points
-    \item adaptive fourth-order collocation (SciPy \texttt{solve\_bvp})
-   \end{itemize}
-   \vspace{0.2cm}
-   \begin{block}{Scan}
-    \centering
-    $25\times29=725$ points\\
-    $10^2\leq\delta\leq10^5$\\
-    $10^{-3}\leq\mu\leq0.3$, $x_{\max}=160$
-   \end{block}
-  \end{column}
+ \begin{column}{.49\textwidth}
+  \small
+  \begin{itemize}
+   \item Exact density jump: separate inner and outer domains
+   \item Regular center, matched surface, exterior Robin condition
+   \item Charge-scaled linear/log field variables
+   \item Adaptive fourth-order SciPy collocation
+  \end{itemize}
+  \begin{block}{Numerical experiment}
+   \centering \StudyPoints\ BVPs, $x_{\max}=160$\\
+   $10^2\leq\delta\leq10^5$, $10^{-3}\leq\mu\leq0.3$\\
+   \StudyRadiusSamples\ direct probe radii from $1.02R$ to $20R$
+  \end{block}
+ \end{column}
+ \begin{column}{.47\textwidth}
+  \begin{block}{Local nonlinear force}
+   \[\ad(x)=\frac{2\beta^2Q_t}{s}x^2u'_{\rm num}(x)\]
+   \[s=\frac{\mu^2\delta}{6}\]
+  \end{block}
+  \small The tail model is evaluated separately:
+  \[\at=2\beta^2Q_tQ(1+\mu x)e^{-\mu(x-1)}.\]
+  Reference: the body's total-mass Newtonian acceleration.
+ \end{column}
  \end{columns}
- \vfill
- \centering\bfseries All 725 parameter points converged.
 \end{frame}
 
-\begin{frame}{5. Verification: analytic limit, convergence, independent estimator}
- \centering
- \includegraphics[width=0.96\textwidth]{verification.png}
- \vspace{-0.1cm}
- \begin{columns}[T,onlytextwidth]
-  \begin{column}{0.33\textwidth}\centering\scriptsize
-   weak-source analytic error\\\textbf{$2.8\times10^{-5}$ max}
-  \end{column}
-  \begin{column}{0.33\textwidth}\centering\scriptsize
-   $x_{\max}=160\to240$ change\\\textbf{0.0528\%}
-  \end{column}
-  \begin{column}{0.33\textwidth}\centering\scriptsize
-   full-atlas estimator disagreement\\\textbf{0.0481\% max}
-  \end{column}
- \end{columns}
- \vspace{0.18cm}
+\begin{frame}{5. Analytic and refined-resolution checks}
+ \centering\includegraphics[width=.96\textwidth]{verification.png}
+ \vspace{.05cm}
+ \small
+ Refined audit: \StudyAuditPoints\ points, including local-force threshold flips.\\[4pt]
+ Charge change: at most \StudyAuditChargeMax\%. Local-force scan/refined difference:
+ at most \StudyAuditForceMax\%.\\[3pt]
+ Direct-force decision changes in the audit: \textbf{\StudyAuditForceFlips}.
+\end{frame}
+
+\begin{frame}{6. The field and its asymptotic charge}
+ \centering\includegraphics[width=.92\textwidth]{profiles_and_charge_extraction.png}
+ \vspace{.05cm}
+ \parbox{.94\textwidth}{\centering\small
+ The far-tail amplitude and gradient estimators agree.\\[3pt]
+ That agreement checks charge extraction, not near-source linearity.}
+\end{frame}
+
+\begin{frame}{7. Charge accuracy on the parameter grid}
+ \centering\includegraphics[width=.97\textwidth]{accuracy_atlas.png}
+ \vspace{.06cm}
+ \small
+ 10\% charge coverage: surface \StudySurfaceWithin\%, center \StudyCenterWithin\%,
+ active shell \StudyASWithin\%.\\[3pt]
+ These are fractions of the chosen grid, not probabilities for a theory.
+\end{frame}
+
+\begin{frame}{8. The simpler control reaches the same charge coverage}
  \centering\small
- 14-point stratified $160\to240$ audit: \textbf{0.0560\% max} charge change,
- \textbf{0} flips of any 10\%-accuracy classification.
+ \begin{tabular}{lrrr}\toprule
+ Model & Median error & Maximum & Within 10\%\\\midrule
+ \StudyChargeRowsEN
+ \bottomrule\end{tabular}
+ \vspace{.35cm}
+ \[\qpv=e^{-\mu}\qms\qquad\hbox{versus}\qquad\qas\]
+ \begin{itemize}
+  \item Additional radial weighting changes the control by at most \StudyRadialMax\% here.
+  \item Both reach \StudyASWithin\% coverage; radial weighting is not established as necessary.
+ \end{itemize}
 \end{frame}
 
-\begin{frame}{6. The BVP resolves unscreened, transition, and screened regimes}
- \centering
- \includegraphics[width=0.96\textwidth]{profiles_and_charge_extraction.png}
- \vspace{-0.1cm}
- \scriptsize
- $Q_{\rm num}=0.885$ (unscreened), $0.499$ (transition), and $5.47\times10^{-3}$ (screened).\\
- The charge plateaus are outputs of the full solution; no thin shell is imposed.
-\end{frame}
-
-\begin{frame}{7. Headline result: finite-range continuation is not unique}
- \centering
- \includegraphics[width=0.97\textwidth]{accuracy_atlas.png}
- \vspace{-0.05cm}
- \scriptsize
- Red = overprediction. Black = 10\% error boundary. Dashed = constant $\epsilon$.\\
- \alert{Surface and center continuations differ; the active-shell integral models most of the numerical trend.}
-\end{frame}
-
-\begin{frame}{8. An active-shell integral models most of the numerical trend}
- \begin{columns}[T,onlytextwidth]
-  \begin{column}{0.54\textwidth}
-   \centering
-   \setlength{\tabcolsep}{4pt}
-   \begin{tabular}{lrrr}
-    \toprule
-     & Median & Maximum & $<10\%$ \\
-    \midrule
-    Surface shell & 2.78\% & 62.6\% & 68.8\% \\
-    Center point & 0.566\% & 30.1\% & 91.3\% \\
-    \color{blue}Active shell & \color{blue}0.391\% & \color{blue}13.1\% & \color{blue}99.7\% \\
-    \bottomrule
-   \end{tabular}
-   \vspace{0.35cm}
-   \begin{block}{Checked filter for long-range 10\% accuracy}
-    \[
-      \boxed{\epsilon<0.1,\quad m_cR>10,\quad m_\infty R<0.035}
-    \]
-    17/17 atlas + 12/12 held-out midpoints pass.
-   \end{block}
-  \end{column}
-  \begin{column}{0.42\textwidth}
-   \textbf{Two lessons}
-   \begin{enumerate}
-    \item $3\epsilon$ is only first order in shell thickness.
-    \item Finite range requires a radial source-location model.
-   \end{enumerate}
-   \vspace{0.25cm}
-   \begin{alertblock}{Important scope}
-    ``99.7\%'' means this $n=1$, spherical, logarithmic grid.  It is not a
-    proof for all chameleon potentials or geometries.
-   \end{alertblock}
-  \end{column}
- \end{columns}
-\end{frame}
-
-\begin{frame}{9. A force-ratio threshold is a proxy, not an apparatus reach}
- \begin{columns}[T,onlytextwidth]
-  \begin{column}{0.52\textwidth}
-   \begin{block}{Outside a spherical source}
-    \[
-     \alpha_5\equiv\left|\frac{a_5}{a_N}\right|
-     =2\beta^2Q_sQ_t(1+\mu x_p)e^{-\mu(x_p-1)}
-    \]
-   \end{block}
-   Main map: $\beta=1$, $Q_t=1$, $x_p=1.5$.
-   \vspace{0.25cm}
-   \[
-     \alpha_\star=10^{-2}
-   \]
-   is an \textbf{illustrative dimensionless threshold}, chosen to test whether
-   continuation ambiguity flips a proxy decision.
-  \end{column}
-  \begin{column}{0.44\textwidth}
-   \begin{block}{Do not conflate three statements}
-    \begin{itemize}
-     \item $\alpha_5$: physical signal ratio
-     \item $\mathcal R=|a_5|/a_{\rm lim}$: reach of a past null result
-     \item $\mathcal D=|\Delta a_5|/\sigma_a$: future SNR proxy
-    \end{itemize}
-   \end{block}
-   Atoms can have $Q_t\simeq1$ while bulk probes screen, but different devices
-   have different noise.  Scalar charge alone does not rank instruments.
-  \end{column}
- \end{columns}
- \vfill
- \centering\color{graytext}\small
- No source scale or detector noise is specified: this is not a sensitivity or exclusion curve.
-\end{frame}
-
-\begin{frame}{10. Continuation choice can cross the proxy threshold}
- \centering
- \includegraphics[width=0.97\textwidth]{detectability_map.png}
- \vspace{-0.05cm}
- \begin{columns}[T,onlytextwidth]
-  \begin{column}{0.33\textwidth}\centering\scriptsize
-   continuation-sensitive points\\\textbf{4 of 725 at $\alpha_\star=10^{-2}$}
-  \end{column}
-  \begin{column}{0.33\textwidth}\centering\scriptsize
-   median contour shift\\\textbf{0.032 dex surface / 0.0066 dex center}
-  \end{column}
-  \begin{column}{0.33\textwidth}\centering\scriptsize
-   convention-robust mismatch\\\textbf{0 points: numerical agrees with one continuation}
-  \end{column}
- \end{columns}
-\end{frame}
-
-\begin{frame}{11. What this result is---and is not}
- \begin{columns}[T,onlytextwidth]
-  \begin{column}{0.48\textwidth}
-   \begin{block}{Defensible contribution}
-    \begin{itemize}
-     \item systematic spherical transition-regime error atlas
-     \item verified numerical scalar-charge extraction
-     \item benchmarked active-shell finite-range ansatz
-     \item continuation-to-threshold ambiguity map
-     \item reproducible code, data, and tests
-    \end{itemize}
-   \end{block}
-  \end{column}
-  \begin{column}{0.48\textwidth}
-   \begin{alertblock}{Not claimed}
-    \begin{itemize}
-     \item detection of a fifth force
-     \item a new physical $(\Lambda,M_c)$ exclusion
-     \item validity for chambers or nonspherical sources
-     \item universal accuracy or literature priority of $Q_{\rm AS}$
-     \item revival of the basic dark-energy model
-    \end{itemize}
-   \end{alertblock}
-  \end{column}
- \end{columns}
- \vspace{0.3cm}
+\begin{frame}{9. Even the numerical charge can mispredict local force}
+ \centering\includegraphics[width=.97\textwidth]{force_validity_map.png}
+ \vspace{.05cm}
  \small
- Chamber walls and three-dimensional geometry can change laboratory forces;
- published numerical work finds device-specific corrections at the tens-of-percent level.
- A 2022 levitated-sensor experiment reports ruling out the basic cosmologically viable
- chameleon model in its tested parameter space.  Here the model is a nonlinear mechanics
- laboratory for approximation control.
+ Worst tail-force error: \textbf{\StudyForceNearMax\% at $1.5R$},
+ \StudyForceFiveMax\% at $5R$, \StudyForceTenMax\% at $10R$.\\[3pt]
+ The first-validity radius tests every later sampled radius through $20R$.
 \end{frame}
 
-\begin{frame}{12. Conclusion: continuation, radial structure, and one filter}
+\begin{frame}{10. Threshold map corrected to the direct force}
+ \centering\includegraphics[width=.97\textwidth]{detectability_map.png}
+ \vspace{.05cm}
+ \small
+ $\beta=Q_t=1$, $r=1.5R$, illustrative threshold $\alpha_\star=\StudyThreshold$.\\[3pt]
+ Numerical-charge tail: \StudyTailFlips\ wrong decisions.
+ Surface / center models: \StudySurfaceFlips\ / \StudyCenterFlips.\\[3pt]
+ This is a local force-ratio map; apparatus scale and noise are not included.
+\end{frame}
+
+\begin{frame}{11. Error cancellation changes the observable ranking}
+ \[\frac{\at(Q_j,x)}{\ad(x)}=
+   \frac{Q_j}{\qnum}\frac{\at(\qnum,x)}{\ad(x)}\]
  \begin{columns}[T,onlytextwidth]
-  \begin{column}{0.61\textwidth}
-   \begin{enumerate}
-    \item \textbf{68.8\% vs 91.3\%}: surface vs center continuation within 10\%.
-    \item \textbf{62.6\%}: worst surface-continuation overprediction.
-    \item \textbf{99.7\%}: active-shell integral within 10\%.
-   \end{enumerate}
-   \vspace{0.25cm}
-   \begin{block}{Practical rule from this scan}
-    A small shell is not enough.  Also require a heavy core and a source small
-    compared with the exterior Compton wavelength:
-    \[
-      \epsilon<0.1,\quad m_cR>10,\quad m_\infty R<0.035.
-    \]
-   \end{block}
-  \end{column}
-  \begin{column}{0.35\textwidth}
-   \begin{block}{Research meaning}
-    The long-range law alone cannot choose a finite-range source location.
-    The active radial distribution controls the result.
-   \end{block}
-   \vspace{0.25cm}
-   \centering
-   \href{https://github.com/Lasqui-Ponto/Mechanics_Term_Project/tree/agent/improve-chameleon-project/Thin_Shell_Study}{\color{orange}\bfseries Source, data, tests, and PDFs}\\[5pt]
-   \scriptsize
-   \texttt{Thin\_Shell\_Study/}
-  \end{column}
+ \begin{column}{.47\textwidth}
+  \begin{block}{Two errors multiply}
+   A charge overestimate can partly cancel a near-field tail underestimate.
+   Charge accuracy alone does not rank local-force predictions.
+  \end{block}
+  \small Active-shell 10\% coverage:\\
+  charge \StudyASWithin\%, force at $1.5R$ \StudyASLocalWithin\%.
+ \end{column}
+ \begin{column}{.49\textwidth}
+  \small
+  \begin{itemize}
+   \item Test several force-ratio thresholds; no crossing is a valid result.
+   \item Distance validity is conditional on this $n=1$, $D\to0$ spherical grid.
+   \item Real detectability also needs geometry, modulation, probe response, and noise.
+  \end{itemize}
+ \end{column}
  \end{columns}
- \vfill
- \centering\Large\bfseries Questions?
+\end{frame}
+
+\begin{frame}{12. What this study establishes}
+ \begin{enumerate}
+  \item Specified charge models can be benchmarked reproducibly against a nonlinear BVP.
+  \item The ablation limits the causal claim for radial weighting on this grid.
+  \item A local gradient reference reveals a distance-dependent propagation error.
+  \item The corrected force changes \StudyTailFlips\ decisions at $\alpha_\star=\StudyThreshold$.
+ \end{enumerate}
+ \vspace{.2cm}
+ \begin{block}{Next research question}
+  How does this charge-to-force validity change for $\mu\gtrsim1$,
+  chamber walls, or different source shapes?
+ \end{block}
+ \centering\small
+ \href{https://github.com/Lasqui-Ponto/Mechanics_Term_Project/tree/agent/improve-chameleon-project/Thin_Shell_Study}{Code, data, tests, and both language editions on GitHub}
 \end{frame}
 
 \begin{frame}{Selected references}
  \footnotesize
  \begin{thebibliography}{9}
-  \bibitem{KW} J. Khoury and A. Weltman, \emph{Phys. Rev. Lett.} 93, 171104 (2004); \emph{Phys. Rev. D} 69, 044026 (2004).
-  \bibitem{TT} T. Tamaki and S. Tsujikawa, \emph{Phys. Rev. D} 78, 084028 (2008).
-  \bibitem{Review} C. Burrage and J. Sakstein, \emph{Living Rev. Relativ.} 21, 1 (2018).
-  \bibitem{Atom} C. Burrage, E. Copeland, and E. Hinds, \emph{JCAP} 03, 042 (2015).
-  \bibitem{Elder} B. Elder et al., \emph{Phys. Rev. D} 94, 044051 (2016).
-  \bibitem{Sabulsky} D. Sabulsky et al., \emph{Phys. Rev. Lett.} 123, 061102 (2019).
-  \bibitem{Yin} P. Yin et al., \emph{Nature Phys.} 18, 1181--1185 (2022).
+ \bibitem{KW} J. Khoury and A. Weltman, \emph{Phys. Rev. Lett.} 93, 171104 (2004); \emph{Phys. Rev. D} 69, 044026 (2004).
+ \bibitem{TT} T. Tamaki and S. Tsujikawa, \emph{Phys. Rev. D} 78, 084028 (2008).
+ \bibitem{Review} C. Burrage and J. Sakstein, \emph{Living Rev. Relativ.} 21, 1 (2018).
+ \bibitem{Elder} B. Elder et al., \emph{Phys. Rev. D} 94, 044051 (2016).
+ \bibitem{Schlogel} S. Schl\"ogel et al., \emph{Phys. Rev. D} 93, 104036 (2016).
+ \bibitem{Atom} D. Sabulsky et al., \emph{Phys. Rev. Lett.} 123, 061102 (2019).
+ \bibitem{Yin} P. Yin et al., \emph{Nature Phys.} 18, 1181--1185 (2022).
  \end{thebibliography}
- \vfill
- \scriptsize
- Complete references, derivations, limitations, and reproduction instructions are in the report.
+ \vfill\scriptsize Full derivations, limitations, and reproduction instructions are in the report.
 \end{frame}
-
 \end{document}

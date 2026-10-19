@@ -1,0 +1,26 @@
+name: Numerical verification
+
+on:
+  push:
+    branches: [main]
+    paths: ['**.py', 'requirements.txt', '.github/workflows/numerics.yml']
+  pull_request:
+    paths: ['**.py', 'requirements.txt', '.github/workflows/numerics.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  verification:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - run: python -m unittest discover -v
